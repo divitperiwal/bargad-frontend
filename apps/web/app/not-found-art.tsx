@@ -101,7 +101,7 @@ export function NotFoundArt() {
           textAnchor="middle"
           fill="currentColor"
           style={{
-            fontFamily: 'var(--font-literata), serif',
+            fontFamily: 'var(--font-source-serif), serif',
             fontSize: 230,
             letterSpacing: '-0.04em',
           }}
@@ -166,7 +166,7 @@ export function NotFoundArt() {
         <button
           type="button"
           onClick={() => window.history.back()}
-          className="grid h-12 place-items-center rounded-full bg-accent px-7 text-base font-medium text-accent-ink transition-colors duration-200 hover:bg-accent-hover"
+          className="grid h-12 place-items-center rounded-[10px] bg-brand px-7 text-base font-medium text-brand-ink transition-colors duration-200 hover:bg-brand-hover"
         >
           Go back
         </button>

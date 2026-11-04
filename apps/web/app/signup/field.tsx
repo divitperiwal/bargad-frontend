@@ -4,13 +4,13 @@ import { AnimatePresence, motion } from 'motion/react';
 
 /** A text input. The focus ring is drawn inside the border so it never shifts layout. */
 export const control =
-  'h-[var(--ctl)] w-full rounded-xl border bg-surface px-4 text-base text-ink placeholder:text-ink-3 outline-none transition-[border-color,box-shadow] duration-200 ease-[var(--ease)] focus-visible:outline-none';
+  'h-[var(--ctl)] w-full rounded-[10px] border bg-surface px-4 text-base text-ink placeholder:text-ink-3 outline-none transition-[border-color,box-shadow] duration-200 ease-[var(--ease)] focus-visible:outline-none';
 
 /** Classes for a control in its normal or error state. */
 export function controlState(error?: string) {
   return error
     ? `${control} border-danger shadow-[inset_0_0_0_1px_var(--danger)] focus:border-danger focus:shadow-[inset_0_0_0_1px_var(--danger)]`
-    : `${control} border-line-strong focus:border-accent focus:shadow-[inset_0_0_0_1px_var(--accent)]`;
+    : `${control} border-line-strong focus:border-brand focus:shadow-[inset_0_0_0_1px_var(--brand)]`;
 }
 
 export function Message({ id, error }: { id: string; error?: string }) {

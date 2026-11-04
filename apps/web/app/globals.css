@@ -1,35 +1,40 @@
 @import "tailwindcss";
 
+/* Bargad design tokens.
+   One brand colour, jamun: a deep Indian plum, close to black, used for the
+   art panel, primary buttons, links, focus and selection. It is neither green
+   nor red, so it never reads as a market move. Everything else is a cool
+   neutral tinted a touch toward it. */
 :root {
-  /* Warm white page, paper for the engraving panel, one banyan-green accent
-     for actions, selection and focus. Text is a green-tinted near-black so the
-     neutrals and the accent belong to one family. */
-  --bg: #fbfaf7;
+  --bg: #fdfcfd;
   --surface: #ffffff;
-  --surface-2: #f2efe8;
-  --line: #e2ddd3;
-  --line-strong: #c9c3b6;
-  --ink: #1b1f1c;
-  --ink-2: #3c423e;
-  --ink-3: #636a65;
-  --accent: #1f4d3a;
-  --accent-hover: #173d2e;
-  --accent-ink: #f7f5ef;
-  --accent-soft: #e6ede8;
-  --danger: #a2361f;
-  --danger-soft: #fbefeb;
-  --inverse-bg: #1b1f1c;
-  --inverse-ink: #f7f5ef;
-  /* The illustration card is light paper in both themes: the engraving is
-     dark ink, so it needs a light ground. */
-  --panel: #eee9df;
-  --panel-ink: #1b1f1c;
-  --panel-ink-2: #3c423e;
-  /* Behind the signed-in pages: a stone one step off white, so white cards read. */
-  --ground: #f4f3f1;
+  --surface-2: #f5f2f5;
+  --line: #e8e3e8;
+  --line-strong: #cfc7d0;
+  --ink: #18131a;
+  --ink-2: #433a45;
+  --ink-3: #6b6270;
+
+  --brand: #2a1630;
+  --brand-hover: #3c2244;
+  --brand-ink: #fbf7fb;
+  --brand-soft: #f3ecf4;
+  /* Linework and type on the jamun panel. */
+  --brand-line: #eadcec;
+  --brand-muted: #c6b2ca;
+
+  --danger: #b42318;
+  --danger-soft: #fef3f2;
+  --gain: #17784a;
+
+  --inverse-bg: #18131a;
+  --inverse-ink: #fbf7fb;
+  /* Behind future signed-in pages: one step off white, so white cards read. */
+  --ground: #f6f4f6;
+
   color-scheme: light;
-  /* Form sizing that follows the window height, so a form fits the screen
-     on a short laptop and stays roomy on a tall monitor. */
+  /* Form sizing that follows the window height, so a form fits a short
+     laptop screen and stays roomy on a tall monitor. */
   --ctl: clamp(44px, 6dvh, 52px);
   --stack: clamp(10px, 1.8dvh, 18px);
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
@@ -39,23 +44,24 @@
    ready: setting <html data-theme="dark"> switches to it. */
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --bg: #121513;
-  --ground: #0e100f;
-  --surface: #181c19;
-  --surface-2: #20251f;
-  --line: #2c322d;
-  --line-strong: #414842;
-  --ink: #eef0ea;
-  --ink-2: #c7ccc4;
-  --ink-3: #959c94;
-  --accent: #8fc2a3;
-  --accent-hover: #a6d1b6;
-  --accent-ink: #0e1a13;
-  --accent-soft: #1c2b22;
-  --danger: #f09a82;
-  --danger-soft: #2a1914;
-  --inverse-bg: #eef0ea;
-  --inverse-ink: #121513;
+  --bg: #121014;
+  --ground: #0d0b0e;
+  --surface: #19161b;
+  --surface-2: #221e24;
+  --line: #2e2930;
+  --line-strong: #463f48;
+  --ink: #f3eef4;
+  --ink-2: #cfc6d1;
+  --ink-3: #9d93a0;
+  --brand: #d9c3df;
+  --brand-hover: #e8d7ec;
+  --brand-ink: #1c0f21;
+  --brand-soft: #2a2030;
+  --danger: #f4a097;
+  --danger-soft: #2c1714;
+  --gain: #6fd3a0;
+  --inverse-bg: #f3eef4;
+  --inverse-ink: #121014;
 }
 
 @theme inline {
@@ -65,29 +71,28 @@
   --color-surface-2: var(--surface-2);
   --color-line: var(--line);
   --color-line-strong: var(--line-strong);
-  --color-panel: var(--panel);
-  --color-panel-ink: var(--panel-ink);
-  --color-panel-ink-2: var(--panel-ink-2);
   --color-ink: var(--ink);
   --color-ink-2: var(--ink-2);
   --color-ink-3: var(--ink-3);
-  --color-accent: var(--accent);
-  --color-accent-hover: var(--accent-hover);
-  --color-accent-ink: var(--accent-ink);
-  --color-accent-soft: var(--accent-soft);
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-ink: var(--brand-ink);
+  --color-brand-soft: var(--brand-soft);
+  --color-brand-line: var(--brand-line);
+  --color-brand-muted: var(--brand-muted);
   --color-danger: var(--danger);
   --color-danger-soft: var(--danger-soft);
+  --color-gain: var(--gain);
   --color-inverse-bg: var(--inverse-bg);
   --color-inverse-ink: var(--inverse-ink);
-  /* Literata for the voice (headings, the wordmark), Atkinson Hyperlegible
-     Next for everything you read and type: it was drawn for low-vision
-     readers, and its 0/O and 1/l/I never get mixed up in an email or a PIN. */
-  --font-sans: var(--font-atkinson);
-  --font-serif: var(--font-literata);
+  /* Source Serif 4 for the voice (headings, the wordmark, money), Onest for
+     everything you read and type. */
+  --font-sans: var(--font-onest);
+  --font-serif: var(--font-source-serif);
   --font-mono: var(--font-geist-mono);
 }
 
-/* Artwork drawn as dark ink on transparent: flipped to light lines on dark. */
+/* The panel art is light linework on jamun in both themes. */
 :root[data-theme="dark"] .theme-ink {
   filter: invert(1);
 }
@@ -115,43 +120,45 @@ svg {
 }
 
 ::selection {
-  background: color-mix(in srgb, var(--ink) 16%, transparent);
+  background: color-mix(in srgb, var(--brand) 18%, transparent);
   color: inherit;
 }
 
 body {
   background: var(--bg);
   color: var(--ink);
-  font-family: var(--font-atkinson), system-ui, sans-serif;
+  font-family: var(--font-onest), system-ui, sans-serif;
 }
 
 /* In the base layer so a control can swap the ring for its own focus style. */
 @layer base {
   :focus-visible {
-    outline: 2px solid var(--accent);
+    outline: 2px solid var(--brand);
     outline-offset: 2px;
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
   }
 }
 
-h1,
-h2,
-h3 {
-  text-wrap: balance;
-}
-
-p {
-  text-wrap: pretty;
-}
-
-/* Inline links. Underlined at rest so they read as links without colour;
-   hover darkens the text and thickens the underline. */
+/* Inline links: underlined at rest so they read as links without colour;
+   hover thickens the underline. */
 .link {
-  color: var(--accent);
+  color: var(--brand);
+  font-weight: 500;
   text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--brand) 40%, transparent);
   text-decoration-thickness: 1px;
   text-underline-offset: 3px;
   transition:
-    color 200ms var(--ease),
+    text-decoration-color 200ms var(--ease),
     text-decoration-thickness 200ms var(--ease);
 }
 
@@ -162,7 +169,7 @@ p {
 
 @media (hover: hover) {
   .link:hover {
-    color: var(--accent-hover);
+    text-decoration-color: var(--brand);
     text-decoration-thickness: 2px;
   }
 

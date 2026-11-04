@@ -62,8 +62,8 @@ const ease = [0.22, 1, 0.36, 1] as const;
 const press = { duration: 0.15, ease } as const;
 
 const button =
-  'relative flex h-[var(--ctl)] w-full items-center justify-center gap-2.5 rounded-full text-base font-medium transition-[background-color,color] duration-200 ease-[var(--ease)] disabled:cursor-progress';
-const primary = `${button} bg-accent text-accent-ink hover:bg-accent-hover`;
+  'relative flex h-[var(--ctl)] w-full items-center justify-center gap-2.5 rounded-[10px] text-base font-medium transition-[background-color,color] duration-200 ease-[var(--ease)] disabled:cursor-progress';
+const primary = `${button} bg-brand text-brand-ink hover:bg-brand-hover`;
 const secondary = `${button} border border-line-strong bg-surface text-ink hover:bg-surface-2`;
 
 function validate(mode: Mode, v: Values): Errors {
@@ -224,7 +224,7 @@ export function AuthFlow({ initial }: { initial: Mode }) {
           >
             <h1
               data-anim="rise"
-              className="font-serif text-[clamp(30px,4.6dvh,40px)] font-medium leading-[1.12] tracking-[-0.02em]"
+              className="font-serif text-[clamp(32px,5dvh,44px)] leading-[1.08] tracking-[-0.025em]"
             >
               {copy[mode].title}
             </h1>
@@ -406,7 +406,7 @@ export function AuthFlow({ initial }: { initial: Mode }) {
                   />
                   <span
                     aria-hidden="true"
-                    className={`grid h-[22px] w-[22px] shrink-0 place-items-center rounded-md border bg-surface text-accent-ink transition-colors duration-200 peer-checked:border-accent peer-checked:bg-accent peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-accent [&>svg]:opacity-0 peer-checked:[&>svg]:opacity-100 ${
+                    className={`grid h-[22px] w-[22px] shrink-0 place-items-center rounded-md border bg-surface text-brand-ink transition-colors duration-200 peer-checked:border-brand peer-checked:bg-brand peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-brand [&>svg]:opacity-0 peer-checked:[&>svg]:opacity-100 ${
                       errors.terms ? 'border-danger' : 'border-line-strong'
                     }`}
                   >
@@ -464,9 +464,9 @@ export function AuthFlow({ initial }: { initial: Mode }) {
           <Collapse show={signup} index={5}>
             <p
               data-anim="rise"
-              className="mt-[var(--stack)] flex items-start gap-3 rounded-xl bg-accent-soft px-4 py-3 text-sm leading-relaxed text-ink-2"
+              className="mt-[var(--stack)] flex items-start gap-3 rounded-[10px] bg-brand-soft px-4 py-3 text-sm leading-relaxed text-ink-2"
             >
-              <ShieldIcon size={18} className="mt-0.5 shrink-0 text-accent" />
+              <ShieldIcon size={18} className="mt-0.5 shrink-0 text-brand" />
               <span>
                 Only you link your broker and approve trades on your account. Family can ask; you
                 decide.

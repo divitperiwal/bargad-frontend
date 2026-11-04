@@ -1,20 +1,20 @@
 import type { Metadata } from 'next';
-import { Atkinson_Hyperlegible_Next, Geist_Mono, Literata } from 'next/font/google';
+import { Geist_Mono, Onest, Source_Serif_4 } from 'next/font/google';
 import './globals.css';
 
-// Headings: a sturdy book serif with a real italic, at home next to the
-// engraving and still solid at small sizes.
-const literata = Literata({
-  variable: '--font-literata',
+// Headings, the wordmark and money: a contemporary serif at regular weight,
+// using its display optical size so large type stays crisp.
+const sourceSerif = Source_Serif_4({
+  variable: '--font-source-serif',
   subsets: ['latin'],
+  axes: ['opsz'],
   style: ['normal', 'italic'],
 });
 
-// Body and controls: built for legibility, so a parent can read it easily.
-const atkinson = Atkinson_Hyperlegible_Next({
-  variable: '--font-atkinson',
-  // Next has no metrics for this face to build a fallback from.
-  adjustFontFallback: false,
+// Body and controls: open shapes and a large x-height, easy to read for
+// every member of the family.
+const onest = Onest({
+  variable: '--font-onest',
   subsets: ['latin'],
 });
 
@@ -32,7 +32,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
     <html
       lang="en"
-      className={`${literata.variable} ${atkinson.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${sourceSerif.variable} ${onest.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>

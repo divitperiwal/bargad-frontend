@@ -1,6 +1,6 @@
 /**
  * Interface icons from Craftwork's "Flex Smooth Design Icons" pack, outline
- * style (https://craftwork.design/icons?icon=2744, 2526, 2902), licensed under
+ * style (https://craftwork.design/icons?icon=2744, 2526, 2902, 2556), licensed under
  * the Craftwork Commercial License: https://craftwork.design/license#icons.
  * One pack, one style for the whole app; strokes follow currentColor.
  */
@@ -61,6 +61,15 @@ export function ShieldIcon(props: IconProps) {
   return (
     <Icon {...props}>
       <path d="M.797 6.75c0-3.697 1.55-5.282 2.068-5.81h8.27c.517.528 2.068 2.113 2.068 5.81 0 4.224-4.073 5.782-6.14 6.31C4.994 12.532.796 10.974.796 6.749" />
+    </Icon>
+  );
+}
+
+export function CheckIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M.96 10.269a3.13 3.13 0 0 0 2.753 2.76c1.07.119 2.167.221 3.287.221s2.218-.102 3.287-.222a3.13 3.13 0 0 0 2.753-2.76c.114-1.063.21-2.155.21-3.268s-.096-2.205-.21-3.269a3.13 3.13 0 0 0-2.753-2.76C9.217.853 8.12.75 7 .75S4.782.852 3.713.972A3.13 3.13 0 0 0 .96 3.732C.846 4.794.75 5.886.75 7s.096 2.205.21 3.269" />
+      <path d="M4.5 7.625 6.318 9.5c.856-2.458 1.568-3.536 3.182-5" />
     </Icon>
   );
 }

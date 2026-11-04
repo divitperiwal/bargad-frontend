@@ -334,7 +334,7 @@ export function DateField({
                           onClick={() => pickDay(d)}
                           className={`${cell} ${
                             isSel
-                              ? 'bg-accent font-medium text-accent-ink'
+                              ? 'bg-brand font-medium text-brand-ink'
                               : isToday
                                 ? 'border border-line hover:bg-surface-2'
                                 : 'hover:bg-surface-2'
@@ -363,7 +363,7 @@ export function DateField({
                           setView('days');
                         }}
                         className={`${cell} h-11 rounded-xl ${
-                          isSel ? 'bg-accent font-medium text-accent-ink' : 'hover:bg-surface-2'
+                          isSel ? 'bg-brand font-medium text-brand-ink' : 'hover:bg-surface-2'
                         }`}
                       >
                         {name.slice(0, 3)}
@@ -387,7 +387,7 @@ export function DateField({
                           setView('months');
                         }}
                         className={`${cell} h-11 rounded-xl ${
-                          isSel ? 'bg-accent font-medium text-accent-ink' : 'hover:bg-surface-2'
+                          isSel ? 'bg-brand font-medium text-brand-ink' : 'hover:bg-surface-2'
                         }`}
                       >
                         {y}

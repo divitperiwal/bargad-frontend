@@ -73,14 +73,14 @@ export function Splash() {
     <div
       ref={root}
       aria-hidden="true"
-      className="fixed inset-0 z-50 grid place-items-center bg-bg text-ink"
+      className="fixed inset-0 z-50 grid place-items-center bg-brand text-brand-ink"
     >
       <div data-splash="content" className="flex flex-col items-center" style={{ gap: 12 }}>
         <div className="flex items-center" style={{ gap: 10 }}>
-          <span className="theme-ink flex">
+          <span className="flex">
             <Image
               data-splash="mark"
-              src="/brand/mark-b-roots-ink.png"
+              src="/brand/mark-b-roots-light.webp"
               alt=""
               width={215}
               height={285}
@@ -99,7 +99,7 @@ export function Splash() {
         </div>
         <span
           data-splash="line"
-          className="block origin-left rounded-full bg-ink/70"
+          className="block origin-left rounded-full bg-brand-line/70"
           style={{ height: 2, width: 120 }}
         />
       </div>
