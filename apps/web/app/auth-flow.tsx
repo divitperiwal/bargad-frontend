@@ -33,8 +33,8 @@ const empty: Values = {
 
 const copy = {
   login: {
-    title: 'Log in to your household',
-    subtitle: 'Your family, across every broker.',
+    title: 'Welcome back',
+    subtitle: 'Log in to your household.',
     doc: 'Log in | Bargad',
     button: 'Log in with password',
     pending: 'Logging in',
@@ -62,7 +62,7 @@ const ease = [0.22, 1, 0.36, 1] as const;
 const press = { duration: 0.15, ease } as const;
 
 const button =
-  'relative flex h-[var(--ctl)] w-full items-center justify-center gap-2.5 rounded-[8px] text-base font-medium transition-[background-color,color] duration-200 ease-[var(--ease)] disabled:cursor-progress';
+  'relative flex h-[var(--ctl)] w-full items-center justify-center gap-2.5 rounded-full text-base font-medium transition-[background-color,color] duration-200 ease-[var(--ease)] disabled:cursor-progress';
 const primary = `${button} bg-brand text-brand-ink hover:bg-brand-hover`;
 const secondary = `${button} border border-line-strong bg-surface text-ink hover:bg-surface-2`;
 
@@ -236,7 +236,7 @@ export function AuthFlow({ initial }: { initial: Mode }) {
 
         <div>
           <Collapse show={login} index={0}>
-            <div data-anim="rise" className="flex flex-col gap-2">
+            <div data-anim="rise">
               <motion.button
                 type="button"
                 whileTap={{ scale: 0.97 }}
@@ -246,16 +246,13 @@ export function AuthFlow({ initial }: { initial: Mode }) {
                 <FingerprintIcon size={20} />
                 Log in with passkey
               </motion.button>
-              <p className="text-center text-sm text-ink-3">
-                Uses your phone or laptop's fingerprint or face unlock.
-              </p>
             </div>
           </Collapse>
 
           <Collapse show={login} index={1}>
             <div data-anim="rise" className="flex items-center gap-4 text-sm text-ink-3">
               <span className="h-px flex-1 bg-line" />
-              or use your password
+              or
               <span className="h-px flex-1 bg-line" />
             </div>
           </Collapse>
@@ -461,7 +458,7 @@ export function AuthFlow({ initial }: { initial: Mode }) {
             </div>
           </form>
 
-          <Collapse show={!forgot} index={5}>
+          <Collapse show={signup} index={5}>
             <p
               data-anim="rise"
               className="mt-[var(--stack)] flex items-start gap-2.5 text-sm leading-relaxed text-ink-2"
