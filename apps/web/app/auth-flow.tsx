@@ -1,14 +1,16 @@
 'use client';
 
-import { AnimatePresence, MotionConfig, motion, useReducedMotion } from 'motion/react';
-import { useEffect, useState } from 'react';
-import { FingerprintIcon } from './icons';
+import { AnimatePresence, MotionConfig, motion } from 'motion/react';
+import { useEffect, useRef, useState } from 'react';
+import { ShieldIcon } from './icons';
 import { DateField } from './signup/date-field';
 import { controlState, Field, Label, Message } from './signup/field';
 import { Toast } from './toast';
-import { validateProfile } from './validation';
+import { type ProfileErrors, validateAccount, validateDetails, validateEmail } from './validation';
 
 type Mode = 'login' | 'signup' | 'forgot';
+/** Login: 1 = email, 2 = password. Sign-up: 1 = account, 2 = details. */
+type Step = 1 | 2;
 
 type Values = {
   name: string;
@@ -16,124 +18,96 @@ type Values = {
   mobile: string;
   dob: string;
   password: string;
-  confirm: string;
   terms: boolean;
 };
-type Errors = Partial<Record<keyof Values, string>>;
+type Errors = ProfileErrors;
 
-const empty: Values = {
-  name: '',
-  email: '',
-  mobile: '',
-  dob: '',
-  password: '',
-  confirm: '',
-  terms: false,
+const empty: Values = { name: '', email: '', mobile: '', dob: '', password: '', terms: false };
+
+type Screen = {
+  title: string;
+  subtitle: string;
+  button: string;
+  pending: string;
 };
 
-const copy = {
+const screens: Record<Mode, Record<Step, Screen>> = {
   login: {
-    title: 'Welcome back',
-    subtitle: 'Log in to see how your family is doing.',
-    doc: 'Log in | Bargad',
-    button: 'Log in with password',
-    pending: 'Logging you in',
-    toast:
-      "We can't log you in just yet. We're still setting up accounts, so please try again soon.",
+    1: {
+      title: 'Welcome back',
+      subtitle: 'Log in to see how your family is doing.',
+      button: 'Continue',
+      pending: 'Checking',
+    },
+    2: {
+      title: 'Enter your password',
+      subtitle: '',
+      button: 'Log in',
+      pending: 'Logging you in',
+    },
   },
   signup: {
-    title: "Let's set up your household",
-    subtitle: "Start with your own account. You can invite your family once you're in.",
-    doc: 'Create account | Bargad',
-    button: 'Create my account',
-    pending: 'Setting things up',
-    toast:
-      "We can't create accounts just yet. We're still setting things up, so please try again soon.",
+    1: {
+      title: "Let's set up your household",
+      subtitle: "Start with your own account. You can invite your family once you're in.",
+      button: 'Continue',
+      pending: 'Continue',
+    },
+    2: {
+      title: 'Just two more details',
+      subtitle:
+        "Your mobile number helps keep your account safe, and your date of birth confirms you're 18 or older.",
+      button: 'Create my account',
+      pending: 'Setting things up',
+    },
   },
   forgot: {
-    title: 'Forgot your password?',
-    subtitle: "It happens. Tell us your email and we'll send you a link to set a new one.",
-    doc: 'Reset password | Bargad',
-    button: 'Send me a link',
-    pending: 'Sending your link',
-    toast: "Password resets aren't ready yet. Please try again soon.",
+    1: {
+      title: 'Forgot your password?',
+      subtitle: "It happens. Tell us your email and we'll send you a link to set a new one.",
+      button: 'Send me a link',
+      pending: 'Sending your link',
+    },
+    2: {
+      title: 'Forgot your password?',
+      subtitle: '',
+      button: 'Send me a link',
+      pending: 'Sending your link',
+    },
   },
-} as const;
+};
+
+const toasts: Record<Mode, string> = {
+  login: "We can't log you in just yet. We're still setting up accounts, so please try again soon.",
+  signup:
+    "We can't create accounts just yet. We're still setting things up, so please try again soon.",
+  forgot: "Password resets aren't ready yet. Please try again soon.",
+};
+
+const docTitles: Record<Mode, string> = {
+  login: 'Log in | Bargad',
+  signup: 'Create account | Bargad',
+  forgot: 'Reset password | Bargad',
+};
+
+const order = ['name', 'email', 'password', 'terms', 'mobile', 'dob'] as const;
 
 const ease = [0.22, 1, 0.36, 1] as const;
 const press = { duration: 0.15, ease } as const;
 
 const button =
-  'relative flex h-[var(--ctl)] w-full items-center justify-center gap-2.5 rounded-full text-base font-medium transition-[background-color,color] duration-200 ease-[var(--ease)] disabled:cursor-progress';
+  'relative flex h-[var(--ctl)] w-full items-center justify-center gap-2.5 rounded-xl text-base font-medium transition-[background-color,color] duration-200 ease-[var(--ease)] disabled:cursor-progress';
 const primary = `${button} bg-brand text-brand-ink hover:bg-brand-hover`;
-const secondary = `${button} border border-line-strong bg-surface text-ink hover:bg-surface-2`;
-
-function validate(mode: Mode, v: Values): Errors {
-  const e: Errors = {};
-  if (!/^\S+@\S+\.\S+$/.test(v.email.trim()))
-    e.email = "That email doesn't look quite right. Could there be a typo?";
-  if (mode === 'forgot') return e;
-  if (mode === 'login') {
-    if (!v.password) e.password = 'Please enter your password.';
-    return e;
-  }
-  return { ...e, ...validateProfile(v) };
-}
 
 /**
  * Stand-in for the API call until the backend lands: waits like a request
  * would, then reports that accounts aren't connected. Replace with the typed
  * API client; field errors from the server go into `errors`, the rest into
- * the toast.
+ * the toast. Login step one will also ask the server whether this email has a
+ * passkey; until then it always goes on to the password.
  */
 function request(): Promise<{ ok: false }> {
   return new Promise((resolve) => setTimeout(() => resolve({ ok: false }), 700));
-}
-
-/** A row that opens and closes in place; its spacing goes with it. */
-function Collapse({
-  show,
-  index = 0,
-  children,
-}: {
-  show: boolean;
-  /** Position in the cascade: later rows start a beat after earlier ones. */
-  index?: number;
-  children: React.ReactNode;
-}) {
-  const [settled, setSettled] = useState(true);
-  const reduce = useReducedMotion();
-  const stagger = index * 0.04;
-  return (
-    <AnimatePresence initial={false}>
-      {show && (
-        <motion.div
-          key="row"
-          initial={{ height: 0, opacity: 0 }}
-          animate={{ height: 'auto', opacity: 1 }}
-          exit={{ height: 0, opacity: 0 }}
-          transition={
-            reduce
-              ? { duration: 0 }
-              : {
-                  height: { duration: 0.4, ease, delay: stagger },
-                  opacity: { duration: 0.3, delay: stagger + 0.06, ease },
-                }
-          }
-          onAnimationStart={() => setSettled(false)}
-          onAnimationComplete={() => setSettled(true)}
-          // Clipped while moving, free afterwards so the calendar can open.
-          style={{ overflow: settled ? 'visible' : 'hidden' }}
-        >
-          <div className="pb-[var(--stack)]">{children}</div>
-        </motion.div>
-      )}
-    </AnimatePresence>
-  );
-}
-
-function Row({ children }: { children: React.ReactNode }) {
-  return <div className="pb-[var(--stack)]">{children}</div>;
 }
 
 function Spinner() {
@@ -154,14 +128,16 @@ function Spinner() {
 
 export function AuthFlow({ initial }: { initial: Mode }) {
   const [mode, setMode] = useState<Mode>(initial);
+  const [step, setStep] = useState<Step>(1);
   const [v, setV] = useState<Values>(empty);
   const [errors, setErrors] = useState<Errors>({});
   const [showPassword, setShowPassword] = useState(false);
   const [pending, setPending] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
+  const moved = useRef(false);
 
+  const screen = screens[mode][step];
   const signup = mode === 'signup';
-  const forgot = mode === 'forgot';
   const login = mode === 'login';
 
   useEffect(() => {
@@ -170,342 +146,361 @@ export function AuthFlow({ initial }: { initial: Mode }) {
       setMode(
         path.startsWith('/signup') ? 'signup' : path.startsWith('/forgot') ? 'forgot' : 'login',
       );
+      setStep(1);
       setErrors({});
     };
     window.addEventListener('popstate', onPop);
     return () => window.removeEventListener('popstate', onPop);
   }, []);
 
+  // After moving between steps, put the cursor in the first field of the new one.
+  useEffect(() => {
+    if (!moved.current) return;
+    const id = login && step === 2 ? 'password' : signup && step === 2 ? 'mobile' : null;
+    if (id) document.getElementById(id)?.focus();
+  }, [login, signup, step]);
+
   function go(next: Mode) {
-    if (next === mode || pending) return;
+    if (pending) return;
+    moved.current = true;
     setMode(next);
+    setStep(1);
     setErrors({});
     window.history.pushState(null, '', `/${next}`);
-    document.title = copy[next].doc;
+    document.title = docTitles[next];
+  }
+
+  function toStep(next: Step) {
+    moved.current = true;
+    setErrors({});
+    setStep(next);
   }
 
   function set<K extends keyof Values>(key: K, value: Values[K]) {
     setV((prev) => ({ ...prev, [key]: value }));
-    if (errors[key]) setErrors((prev) => ({ ...prev, [key]: undefined }));
+    if (errors[key as keyof Errors]) setErrors((prev) => ({ ...prev, [key]: undefined }));
   }
 
-  const cls = (key: keyof Values) => controlState(errors[key]);
-  const aria = (key: keyof Values) => ({
+  const cls = (key: keyof Errors) => controlState(errors[key]);
+  const aria = (key: keyof Errors) => ({
     'aria-invalid': errors[key] ? (true as const) : undefined,
     'aria-describedby': errors[key] ? `${key}-error` : undefined,
   });
 
+  function check(): Errors {
+    if (signup) return step === 1 ? validateAccount(v) : validateDetails(v);
+    const e: Errors = {};
+    const email = validateEmail(v.email);
+    if (email) e.email = email;
+    if (login && step === 2 && !v.password) e.password = 'Please enter your password.';
+    return e;
+  }
+
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (pending) return;
-    const found = validate(mode, v);
+    const found = check();
     setErrors(found);
-    const first = (
-      ['name', 'email', 'mobile', 'dob', 'password', 'confirm', 'terms'] as const
-    ).find((k) => found[k]);
+    const first = order.find((k) => found[k]);
     if (first) {
       document.getElementById(first)?.focus();
+      return;
+    }
+    if (step === 1 && (login || signup)) {
+      toStep(2);
       return;
     }
     setPending(true);
     await request();
     setPending(false);
-    setToast(copy[mode].toast);
+    setToast(toasts[mode]);
   }
+
+  const key = `${mode}-${step}`;
 
   return (
     <MotionConfig reducedMotion="user">
-      <div className="flex w-full max-w-[400px] flex-col gap-[clamp(28px,4.6dvh,44px)]">
+      <div className="flex w-full max-w-[420px] flex-col">
         <AnimatePresence mode="wait" initial={false}>
-          <motion.header
-            key={mode}
-            initial={{ opacity: 0, y: 8 }}
+          <motion.div
+            key={key}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -6 }}
-            transition={{ duration: 0.2, ease }}
-            className="flex flex-col gap-3"
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.22, ease }}
           >
-            <h1
-              data-anim="rise"
-              className="font-serif text-[clamp(32px,5dvh,44px)] leading-[1.08] tracking-[-0.025em]"
-            >
-              {copy[mode].title}
-            </h1>
-            <p data-anim="rise" className="text-base leading-relaxed text-ink-3">
-              {copy[mode].subtitle}
-            </p>
-          </motion.header>
-        </AnimatePresence>
-
-        <div>
-          <Collapse show={login} index={0}>
-            <div data-anim="rise">
-              <motion.button
-                type="button"
-                whileTap={{ scale: 0.97 }}
-                transition={press}
-                className={primary}
+            <header className="flex flex-col gap-3">
+              {signup && (
+                <p data-anim="rise" className="text-sm font-medium text-ink-3">
+                  Step {step} of 2
+                </p>
+              )}
+              <h1
+                data-anim="rise"
+                className="font-serif text-[clamp(32px,4.6dvh,42px)] leading-[1.1] tracking-[-0.025em]"
               >
-                <FingerprintIcon size={20} />
-                Log in with passkey
-              </motion.button>
-            </div>
-          </Collapse>
+                {screen.title}
+              </h1>
+              {screen.subtitle && (
+                <p data-anim="rise" className="text-base leading-relaxed text-ink-3">
+                  {screen.subtitle}
+                </p>
+              )}
+              {login && step === 2 && (
+                <p className="flex flex-wrap items-center gap-x-3 gap-y-1 text-base text-ink-2">
+                  <span className="selectable">{v.email.trim()}</span>
+                  <button type="button" onClick={() => toStep(1)} className="link text-sm">
+                    Change
+                  </button>
+                </p>
+              )}
+            </header>
 
-          <Collapse show={login} index={1}>
-            <div data-anim="rise" className="flex items-center gap-4 py-1 text-sm text-ink-3">
-              <span className="h-px flex-1 bg-line" />
-              or
-              <span className="h-px flex-1 bg-line" />
-            </div>
-          </Collapse>
-
-          <form onSubmit={onSubmit} noValidate aria-busy={pending}>
-            <Collapse show={signup} index={0}>
-              <Field id="name" label="Your full name" error={errors.name}>
-                <input
+            <form
+              onSubmit={onSubmit}
+              noValidate
+              aria-busy={pending}
+              className="mt-[clamp(28px,4.4dvh,40px)] flex flex-col gap-[var(--stack)]"
+            >
+              {signup && step === 1 && (
+                <Field
                   id="name"
-                  name="name"
-                  value={v.name}
-                  onChange={(e) => set('name', e.target.value)}
-                  autoComplete="name"
-                  placeholder="As on your PAN card"
-                  className={cls('name')}
-                  {...aria('name')}
-                />
-              </Field>
-            </Collapse>
-
-            <Row>
-              <Field id="email" label="Email address" error={errors.email}>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  value={v.email}
-                  onChange={(e) => set('email', e.target.value)}
-                  autoComplete={signup ? 'email' : 'username webauthn'}
-                  placeholder="name@example.com"
-                  className={cls('email')}
-                  {...aria('email')}
-                />
-              </Field>
-            </Row>
-
-            <Collapse show={signup} index={1}>
-              <div className="grid gap-[var(--stack)] sm:grid-cols-2 sm:gap-3">
-                <Field id="mobile" label="Mobile number" error={errors.mobile}>
-                  <div className="relative">
-                    <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-base text-ink-3">
-                      +91
-                    </span>
-                    <input
-                      id="mobile"
-                      name="mobile"
-                      type="tel"
-                      inputMode="numeric"
-                      value={v.mobile}
-                      onChange={(e) =>
-                        set('mobile', e.target.value.replace(/\D/g, '').slice(0, 10))
-                      }
-                      autoComplete="tel-national"
-                      placeholder="98765 43210"
-                      className={`${cls('mobile')} pl-[3.25rem]`}
-                      {...aria('mobile')}
-                    />
-                  </div>
+                  label="Your full name"
+                  error={errors.name}
+                  hint="As it appears on your PAN card."
+                >
+                  <input
+                    id="name"
+                    name="name"
+                    value={v.name}
+                    onChange={(e) => set('name', e.target.value)}
+                    autoComplete="name"
+                    className={cls('name')}
+                    {...aria('name')}
+                  />
                 </Field>
-                <DateField
-                  id="dob"
-                  value={v.dob}
-                  onChange={(iso) => set('dob', iso)}
-                  error={errors.dob}
-                  inputClass={cls('dob')}
-                />
-              </div>
-            </Collapse>
+              )}
 
-            <Collapse show={!forgot} index={2}>
-              <div data-anim="rise" className="flex min-w-0 flex-col gap-2">
-                <div className="flex items-baseline justify-between">
-                  <Label htmlFor="password">Password</Label>
-                  <AnimatePresence initial={false}>
+              {step === 1 && (
+                <Field id="email" label="Email address" error={errors.email}>
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    inputMode="email"
+                    value={v.email}
+                    onChange={(e) => set('email', e.target.value)}
+                    // "webauthn" lets the browser offer a saved passkey right here.
+                    autoComplete={signup ? 'email' : 'username webauthn'}
+                    placeholder="name@example.com"
+                    className={cls('email')}
+                    {...aria('email')}
+                  />
+                </Field>
+              )}
+
+              {((login && step === 2) || (signup && step === 1)) && (
+                <div className="flex min-w-0 flex-col gap-2">
+                  <div className="flex items-baseline justify-between">
+                    <Label htmlFor="password">Password</Label>
                     {login && (
-                      <motion.a
-                        key="forgot"
+                      <a
                         href="/forgot"
                         onClick={(e) => {
                           e.preventDefault();
                           go('forgot');
                         }}
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.2 }}
                         className="link text-sm"
                       >
                         Forgot password?
-                      </motion.a>
+                      </a>
                     )}
-                  </AnimatePresence>
+                  </div>
+                  <div className="relative">
+                    <input
+                      id="password"
+                      name="password"
+                      type={showPassword ? 'text' : 'password'}
+                      value={v.password}
+                      onChange={(e) => set('password', e.target.value)}
+                      autoComplete={signup ? 'new-password' : 'current-password'}
+                      className={`${cls('password')} pr-20`}
+                      {...aria('password')}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((s) => !s)}
+                      aria-pressed={showPassword}
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                      className="absolute right-1.5 top-1/2 h-9 -translate-y-1/2 rounded-lg px-3 text-sm font-medium text-ink-2 transition-colors duration-200 hover:bg-surface-2 hover:text-ink"
+                    >
+                      {showPassword ? 'Hide' : 'Show'}
+                    </button>
+                  </div>
+                  <Message id="password" error={errors.password} />
+                  {signup && !errors.password && (
+                    <p className="text-sm text-ink-3">
+                      10 or more characters. A short phrase is easy to remember.
+                    </p>
+                  )}
                 </div>
-                <div className="relative">
-                  <input
-                    id="password"
-                    name="password"
-                    type={showPassword ? 'text' : 'password'}
-                    value={v.password}
-                    onChange={(e) => set('password', e.target.value)}
-                    autoComplete={signup ? 'new-password' : 'current-password'}
-                    className={`${cls('password')} pr-20`}
-                    {...aria('password')}
+              )}
+
+              {signup && step === 1 && (
+                <div className="flex flex-col gap-1.5">
+                  <label className="flex cursor-pointer items-start gap-3 text-[15px] leading-snug text-ink-2">
+                    <input
+                      id="terms"
+                      name="terms"
+                      type="checkbox"
+                      checked={v.terms}
+                      onChange={(e) => set('terms', e.target.checked)}
+                      className="peer sr-only"
+                      {...aria('terms')}
+                    />
+                    <span
+                      aria-hidden="true"
+                      className={`mt-px grid h-[22px] w-[22px] shrink-0 place-items-center rounded-md border bg-surface text-brand-ink transition-colors duration-200 peer-checked:border-brand peer-checked:bg-brand peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-brand [&>svg]:opacity-0 peer-checked:[&>svg]:opacity-100 ${
+                        errors.terms ? 'border-danger' : 'border-line-strong'
+                      }`}
+                    >
+                      <svg
+                        width="13"
+                        height="13"
+                        viewBox="0 0 12 12"
+                        fill="none"
+                        aria-hidden="true"
+                      >
+                        <path
+                          d="M2.4 6.3 4.9 8.8 9.7 3.4"
+                          stroke="currentColor"
+                          strokeWidth="1.8"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </span>
+                    <span>
+                      I agree to the{' '}
+                      <a href="/terms" className="link">
+                        Terms
+                      </a>{' '}
+                      and the{' '}
+                      <a href="/privacy" className="link">
+                        Privacy Policy
+                      </a>
+                      .
+                    </span>
+                  </label>
+                  <Message id="terms" error={errors.terms} />
+                </div>
+              )}
+
+              {signup && step === 2 && (
+                <>
+                  <Field id="mobile" label="Mobile number" error={errors.mobile}>
+                    <div className="relative">
+                      <span
+                        aria-hidden="true"
+                        className="pointer-events-none absolute inset-y-px left-px grid w-14 place-items-center rounded-l-[11px] border-r border-line bg-surface-2 text-base text-ink-2"
+                      >
+                        +91
+                      </span>
+                      <input
+                        id="mobile"
+                        name="mobile"
+                        type="tel"
+                        inputMode="numeric"
+                        value={v.mobile}
+                        onChange={(e) =>
+                          set('mobile', e.target.value.replace(/\D/g, '').slice(0, 10))
+                        }
+                        autoComplete="tel-national"
+                        className={`${cls('mobile')} pl-[4.5rem]`}
+                        {...aria('mobile')}
+                      />
+                    </div>
+                  </Field>
+                  <DateField
+                    id="dob"
+                    value={v.dob}
+                    onChange={(iso) => set('dob', iso)}
+                    error={errors.dob}
+                    inputClass={cls('dob')}
                   />
+                </>
+              )}
+
+              <div className="flex flex-col gap-3 pt-2">
+                <motion.button
+                  type="submit"
+                  disabled={pending}
+                  whileTap={pending ? undefined : { scale: 0.97 }}
+                  transition={press}
+                  className={primary}
+                >
+                  {pending && <Spinner />}
+                  {pending ? screen.pending : screen.button}
+                </motion.button>
+                {signup && step === 2 && (
                   <button
                     type="button"
-                    onClick={() => setShowPassword((s) => !s)}
-                    aria-pressed={showPassword}
-                    aria-label={showPassword ? 'Hide password' : 'Show password'}
-                    className="absolute right-1.5 top-1/2 h-9 -translate-y-1/2 rounded-full px-3 text-sm font-medium text-ink-2 transition-colors duration-200 hover:bg-surface-2 hover:text-ink"
+                    onClick={() => toStep(1)}
+                    className="h-11 rounded-xl text-sm font-medium text-ink-2 transition-colors duration-200 hover:bg-surface-2 hover:text-ink"
                   >
-                    {showPassword ? 'Hide' : 'Show'}
+                    Back
                   </button>
-                </div>
-                <Message id="password" error={errors.password} />
-                {signup && !errors.password && (
-                  <p className="text-sm text-ink-3">
-                    Use 10 or more characters. A short phrase is easy to remember.
-                  </p>
                 )}
               </div>
-            </Collapse>
+            </form>
+          </motion.div>
+        </AnimatePresence>
 
-            <Collapse show={signup} index={3}>
-              <Field id="confirm" label="Type your password again" error={errors.confirm}>
-                <input
-                  id="confirm"
-                  name="confirm"
-                  type={showPassword ? 'text' : 'password'}
-                  value={v.confirm}
-                  onChange={(e) => set('confirm', e.target.value)}
-                  autoComplete="new-password"
-                  className={cls('confirm')}
-                  {...aria('confirm')}
-                />
-              </Field>
-            </Collapse>
-
-            <Collapse show={signup} index={4}>
-              <div data-anim="rise" className="flex flex-col gap-1.5">
-                <label className="flex cursor-pointer items-start gap-3 text-[15px] leading-snug text-ink-2">
-                  <input
-                    id="terms"
-                    name="terms"
-                    type="checkbox"
-                    checked={v.terms}
-                    onChange={(e) => set('terms', e.target.checked)}
-                    className="peer sr-only"
-                    {...aria('terms')}
-                  />
-                  <span
-                    aria-hidden="true"
-                    className={`grid h-[22px] w-[22px] shrink-0 place-items-center rounded-md border bg-surface text-brand-ink transition-colors duration-200 peer-checked:border-brand peer-checked:bg-brand peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-brand [&>svg]:opacity-0 peer-checked:[&>svg]:opacity-100 ${
-                      errors.terms ? 'border-danger' : 'border-line-strong'
-                    }`}
-                  >
-                    <svg width="13" height="13" viewBox="0 0 12 12" fill="none" aria-hidden="true">
-                      <path
-                        d="M2.4 6.3 4.9 8.8 9.7 3.4"
-                        stroke="currentColor"
-                        strokeWidth="1.8"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      />
-                    </svg>
-                  </span>
-                  <span>
-                    I'm 18 or older, and I agree to the{' '}
-                    <a href="/terms" className="link">
-                      Terms
-                    </a>{' '}
-                    and{' '}
-                    <a href="/privacy" className="link">
-                      Privacy Policy
-                    </a>
-                    .
-                  </span>
-                </label>
-                <Message id="terms" error={errors.terms} />
-              </div>
-            </Collapse>
-
-            <div data-anim="rise" className="pt-1">
-              <motion.button
-                type="submit"
-                disabled={pending}
-                whileTap={pending ? undefined : { scale: 0.97 }}
-                transition={press}
-                className={login ? secondary : primary}
+        <p data-anim="rise" className="mt-8 text-base text-ink-3">
+          {signup || mode === 'forgot' ? (
+            <>
+              {mode === 'forgot' ? 'Remembered it?' : 'Already have an account?'}{' '}
+              <a
+                href="/login"
+                onClick={(e) => {
+                  e.preventDefault();
+                  go('login');
+                }}
+                className="link"
               >
-                {pending && <Spinner />}
-                <AnimatePresence mode="wait" initial={false}>
-                  <motion.span
-                    key={`${mode}-${pending}`}
-                    initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -4 }}
-                    transition={{ duration: 0.14, ease }}
-                    className="block"
-                  >
-                    {pending ? copy[mode].pending : copy[mode].button}
-                  </motion.span>
-                </AnimatePresence>
-              </motion.button>
-            </div>
-          </form>
-
-          <p data-anim="rise" className="pt-[var(--stack)] text-base text-ink-3">
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.span
-                key={mode}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.14 }}
-                className="inline-block"
+                Log in
+              </a>
+            </>
+          ) : (
+            <>
+              New to Bargad?{' '}
+              <a
+                href="/signup"
+                onClick={(e) => {
+                  e.preventDefault();
+                  go('signup');
+                }}
+                className="link"
               >
-                {signup || forgot ? (
-                  <>
-                    {forgot ? 'Remembered it?' : 'Already have an account?'}{' '}
-                    <a
-                      href="/login"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        go('login');
-                      }}
-                      className="link font-medium"
-                    >
-                      Log in
-                    </a>
-                  </>
-                ) : (
-                  <>
-                    New to Bargad?{' '}
-                    <a
-                      href="/signup"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        go('signup');
-                      }}
-                      className="link font-medium"
-                    >
-                      Create an account
-                    </a>
-                  </>
-                )}
-              </motion.span>
-            </AnimatePresence>
-          </p>
-        </div>
+                Create an account
+              </a>
+            </>
+          )}
+        </p>
+
+        <p
+          data-anim="rise"
+          className="mt-10 flex items-start gap-3 border-t border-line pt-6 text-sm leading-relaxed text-ink-3"
+        >
+          <ShieldIcon size={18} className="mt-0.5 shrink-0 text-ink-2" />
+          <span>
+            Your data stays yours. You choose what your family sees, and nobody can read your broker
+            login.{' '}
+            <a href="/privacy" className="link whitespace-nowrap">
+              How we protect it
+            </a>
+          </span>
+        </p>
 
         <Toast message={toast} onClose={() => setToast(null)} />
       </div>

@@ -73,7 +73,7 @@ export function Splash() {
     <div
       ref={root}
       aria-hidden="true"
-      className="peacock fixed inset-0 z-50 grid place-items-center text-white"
+      className="canopy fixed inset-0 z-50 grid place-items-center text-white"
     >
       <div data-splash="content" className="flex flex-col items-center" style={{ gap: 12 }}>
         <div className="flex items-center" style={{ gap: 10 }}>

@@ -18,7 +18,7 @@ export function Toast({ message, onClose }: { message: string | null; onClose: (
     <div
       role="status"
       aria-live="polite"
-      className="pointer-events-none fixed inset-x-0 bottom-8 z-30 flex justify-center px-4 lg:left-auto lg:w-[47.6%]"
+      className="pointer-events-none fixed inset-x-0 bottom-8 z-30 flex justify-center px-4 lg:left-auto lg:w-[55%]"
     >
       <AnimatePresence>
         {message && (

@@ -166,7 +166,7 @@ export function NotFoundArt() {
         <button
           type="button"
           onClick={() => window.history.back()}
-          className="grid h-12 place-items-center rounded-full bg-brand px-7 text-base font-medium text-brand-ink transition-colors duration-200 hover:bg-brand-hover"
+          className="grid h-12 place-items-center rounded-xl bg-brand px-7 text-base font-medium text-brand-ink transition-colors duration-200 hover:bg-brand-hover"
         >
           Go back
         </button>
