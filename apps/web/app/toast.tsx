@@ -7,13 +7,7 @@ import { useEffect } from 'react';
  * A short message for problems that aren't about a field: the server being
  * unreachable, too many attempts. Sits on the form side, closes itself.
  */
-export function Toast({
-  message,
-  onClose,
-}: {
-  message: string | null;
-  onClose: () => void;
-}) {
+export function Toast({ message, onClose }: { message: string | null; onClose: () => void }) {
   useEffect(() => {
     if (!message) return;
     const t = setTimeout(onClose, 6000);
@@ -24,7 +18,7 @@ export function Toast({
     <div
       role="status"
       aria-live="polite"
-      className="pointer-events-none fixed inset-x-0 bottom-8 z-30 flex justify-center px-4 lg:left-auto lg:w-[48.8%]"
+      className="pointer-events-none fixed inset-x-0 bottom-8 z-30 flex justify-center px-4 lg:left-auto lg:w-[47.6%]"
     >
       <AnimatePresence>
         {message && (

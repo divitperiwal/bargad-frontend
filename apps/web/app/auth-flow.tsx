@@ -2,9 +2,9 @@
 
 import { AnimatePresence, MotionConfig, motion, useReducedMotion } from 'motion/react';
 import { useEffect, useState } from 'react';
-import { ThumbprintIcon } from './login/thumbprint-icon';
+import { FingerprintIcon, ShieldIcon } from './icons';
 import { DateField } from './signup/date-field';
-import { control, Field, Message } from './signup/field';
+import { controlState, Field, Label, Message } from './signup/field';
 import { Toast } from './toast';
 import { validateProfile } from './validation';
 
@@ -35,34 +35,36 @@ const copy = {
   login: {
     title: 'Log in to your household',
     subtitle: 'Your family, across every broker.',
-    doc: 'Log in · Bargad',
-    button: 'Continue with password',
+    doc: 'Log in | Bargad',
+    button: 'Log in with password',
+    pending: 'Logging in',
     toast: "Sign-in isn't connected yet. Try again once accounts are set up.",
   },
   signup: {
     title: 'Create your household',
     subtitle: 'Start with your own account. You can invite family next.',
-    doc: 'Create account · Bargad',
+    doc: 'Create account | Bargad',
     button: 'Create account',
+    pending: 'Creating account',
     toast: "Sign-up isn't connected yet. Try again once accounts are set up.",
   },
   forgot: {
     title: 'Reset your password',
     subtitle: "Enter your email and we'll send you a link to choose a new one.",
-    doc: 'Reset password · Bargad',
+    doc: 'Reset password | Bargad',
     button: 'Send reset link',
+    pending: 'Sending link',
     toast: "Password reset isn't connected yet. Try again once accounts are set up.",
   },
 } as const;
 
-const press = { type: 'spring', stiffness: 500, damping: 30 } as const;
 const ease = [0.22, 1, 0.36, 1] as const;
+const press = { duration: 0.15, ease } as const;
 
-// One compact size for both modes, so switching never makes controls jump.
-const compact = {
-  '--ctl': 'clamp(40px, 5.6dvh, 48px)',
-  '--stack': 'clamp(6px, 1.3dvh, 12px)',
-} as React.CSSProperties;
+const button =
+  'relative flex h-[var(--ctl)] w-full items-center justify-center gap-2.5 rounded-full text-base font-medium transition-[background-color,color] duration-200 ease-[var(--ease)] disabled:cursor-progress';
+const primary = `${button} bg-accent text-accent-ink hover:bg-accent-hover`;
+const secondary = `${button} border border-line-strong bg-surface text-ink hover:bg-surface-2`;
 
 function validate(mode: Mode, v: Values): Errors {
   const e: Errors = {};
@@ -73,6 +75,16 @@ function validate(mode: Mode, v: Values): Errors {
     return e;
   }
   return { ...e, ...validateProfile(v) };
+}
+
+/**
+ * Stand-in for the API call until the backend lands: waits like a request
+ * would, then reports that accounts aren't connected. Replace with the typed
+ * API client; field errors from the server go into `errors`, the rest into
+ * the toast.
+ */
+function request(): Promise<{ ok: false }> {
+  return new Promise((resolve) => setTimeout(() => resolve({ ok: false }), 700));
 }
 
 /** A row that opens and closes in place; its spacing goes with it. */
@@ -88,7 +100,7 @@ function Collapse({
 }) {
   const [settled, setSettled] = useState(true);
   const reduce = useReducedMotion();
-  const stagger = index * 0.045;
+  const stagger = index * 0.04;
   return (
     <AnimatePresence initial={false}>
       {show && (
@@ -101,8 +113,8 @@ function Collapse({
             reduce
               ? { duration: 0 }
               : {
-                  height: { type: 'spring', stiffness: 150, damping: 24, mass: 0.9, delay: stagger },
-                  opacity: { duration: 0.35, delay: stagger + 0.06, ease },
+                  height: { duration: 0.4, ease, delay: stagger },
+                  opacity: { duration: 0.3, delay: stagger + 0.06, ease },
                 }
           }
           onAnimationStart={() => setSettled(false)}
@@ -121,32 +133,40 @@ function Row({ children }: { children: React.ReactNode }) {
   return <div className="pb-[var(--stack)]">{children}</div>;
 }
 
+function Spinner() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 18 18"
+      fill="none"
+      aria-hidden="true"
+      className="animate-spin motion-reduce:animate-none"
+    >
+      <circle cx="9" cy="9" r="7" stroke="currentColor" strokeOpacity="0.3" strokeWidth="2" />
+      <path d="M16 9a7 7 0 0 0-7-7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 export function AuthFlow({ initial }: { initial: Mode }) {
   const [mode, setMode] = useState<Mode>(initial);
   const [v, setV] = useState<Values>(empty);
   const [errors, setErrors] = useState<Errors>({});
   const [showPassword, setShowPassword] = useState(false);
+  const [pending, setPending] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
 
   const signup = mode === 'signup';
   const forgot = mode === 'forgot';
   const login = mode === 'login';
-  const ready = signup
-    ? v.name.trim() !== '' &&
-      v.email.trim() !== '' &&
-      v.mobile !== '' &&
-      v.dob !== '' &&
-      v.password !== '' &&
-      v.confirm !== '' &&
-      v.terms
-    : forgot
-      ? v.email.trim() !== ''
-      : v.email.trim() !== '' && v.password !== '';
 
   useEffect(() => {
     const onPop = () => {
       const path = window.location.pathname;
-      setMode(path.startsWith('/signup') ? 'signup' : path.startsWith('/forgot') ? 'forgot' : 'login');
+      setMode(
+        path.startsWith('/signup') ? 'signup' : path.startsWith('/forgot') ? 'forgot' : 'login',
+      );
       setErrors({});
     };
     window.addEventListener('popstate', onPop);
@@ -154,7 +174,7 @@ export function AuthFlow({ initial }: { initial: Mode }) {
   }, []);
 
   function go(next: Mode) {
-    if (next === mode) return;
+    if (next === mode || pending) return;
     setMode(next);
     setErrors({});
     window.history.pushState(null, '', `/${next}`);
@@ -166,84 +186,81 @@ export function AuthFlow({ initial }: { initial: Mode }) {
     if (errors[key]) setErrors((prev) => ({ ...prev, [key]: undefined }));
   }
 
-  const cls = (key: keyof Values) => `${control} ${errors[key] ? 'border-ink' : 'border-line'}`;
+  const cls = (key: keyof Values) => controlState(errors[key]);
   const aria = (key: keyof Values) => ({
     'aria-invalid': errors[key] ? (true as const) : undefined,
     'aria-describedby': errors[key] ? `${key}-error` : undefined,
   });
 
-  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (!ready) return;
+    if (pending) return;
     const found = validate(mode, v);
     setErrors(found);
-    const first = (['name', 'email', 'mobile', 'dob', 'password', 'confirm', 'terms'] as const).find(
-      (k) => found[k],
-    );
+    const first = (
+      ['name', 'email', 'mobile', 'dob', 'password', 'confirm', 'terms'] as const
+    ).find((k) => found[k]);
     if (first) {
       document.getElementById(first)?.focus();
       return;
     }
-    // Wrong credentials and taken emails will come back from the API inline;
-    // network and rate-limit failures land in the toast.
+    setPending(true);
+    await request();
+    setPending(false);
     setToast(copy[mode].toast);
   }
 
   return (
     <MotionConfig reducedMotion="user">
-      <div
-        style={compact}
-        className="flex w-full flex-col items-center gap-[clamp(14px,2.8dvh,28px)]"
-      >
-        <p data-anim="rise" className="font-serif text-4xl tracking-tight lg:hidden">
-          bargad
-        </p>
-
+      <div className="flex w-full max-w-[420px] flex-col gap-[clamp(20px,3.4dvh,32px)]">
         <AnimatePresence mode="wait" initial={false}>
-          <motion.div
+          <motion.header
             key={mode}
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
-            transition={{ duration: 0.18, ease }}
-            className="flex flex-col items-center gap-[clamp(6px,1.4dvh,16px)] text-center"
+            transition={{ duration: 0.2, ease }}
+            className="flex flex-col gap-2"
           >
             <h1
               data-anim="rise"
-              className="max-w-[14ch] font-serif text-[clamp(30px,5.4dvh,40px)] leading-[1.05] tracking-[-0.02em] sm:max-w-none"
+              className="font-serif text-[clamp(30px,4.6dvh,40px)] font-medium leading-[1.12] tracking-[-0.02em]"
             >
               {copy[mode].title}
             </h1>
-            <p data-anim="rise" className="text-base text-ink-3">
+            <p data-anim="rise" className="text-base leading-relaxed text-ink-3">
               {copy[mode].subtitle}
             </p>
-          </motion.div>
+          </motion.header>
         </AnimatePresence>
 
-        <div className="w-full max-w-[390px]">
+        <div>
           <Collapse show={login} index={0}>
-            <div data-anim="rise">
+            <div data-anim="rise" className="flex flex-col gap-2">
               <motion.button
                 type="button"
-                whileTap={{ scale: 0.98 }}
+                whileTap={{ scale: 0.97 }}
                 transition={press}
-                className="flex h-[var(--ctl)] w-full items-center justify-center gap-3 rounded-full bg-ink text-base font-medium text-bg transition-opacity hover:opacity-90"
+                className={primary}
               >
-                <ThumbprintIcon size={20} />
+                <FingerprintIcon size={20} />
                 Log in with passkey
               </motion.button>
+              <p className="text-center text-sm text-ink-3">
+                Uses your phone or laptop's fingerprint or face unlock.
+              </p>
             </div>
           </Collapse>
 
           <Collapse show={login} index={1}>
             <div data-anim="rise" className="flex items-center gap-4 text-sm text-ink-3">
               <span className="h-px flex-1 bg-line" />
-              or
+              or use your password
               <span className="h-px flex-1 bg-line" />
             </div>
           </Collapse>
 
-          <form onSubmit={onSubmit} noValidate>
+          <form onSubmit={onSubmit} noValidate aria-busy={pending}>
             <Collapse show={signup} index={0}>
               <Field id="name" label="Full name" error={errors.name}>
                 <input
@@ -252,7 +269,7 @@ export function AuthFlow({ initial }: { initial: Mode }) {
                   value={v.name}
                   onChange={(e) => set('name', e.target.value)}
                   autoComplete="name"
-                  placeholder="As on your PAN"
+                  placeholder="As on your PAN card"
                   className={cls('name')}
                   {...aria('name')}
                 />
@@ -276,43 +293,42 @@ export function AuthFlow({ initial }: { initial: Mode }) {
             </Row>
 
             <Collapse show={signup} index={1}>
-              <Field id="mobile" label="Mobile number" error={errors.mobile}>
-                <div className="relative">
-                  <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-base text-ink-3">
-                    +91
-                  </span>
-                  <input
-                    id="mobile"
-                    name="mobile"
-                    type="tel"
-                    inputMode="numeric"
-                    value={v.mobile}
-                    onChange={(e) => set('mobile', e.target.value.replace(/\D/g, '').slice(0, 10))}
-                    autoComplete="tel-national"
-                    placeholder="98765 43210"
-                    className={`${cls('mobile')} pl-[3.25rem]`}
-                    {...aria('mobile')}
-                  />
-                </div>
-              </Field>
+              <div className="grid gap-[var(--stack)] sm:grid-cols-2 sm:gap-3">
+                <Field id="mobile" label="Mobile number" error={errors.mobile}>
+                  <div className="relative">
+                    <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-base text-ink-3">
+                      +91
+                    </span>
+                    <input
+                      id="mobile"
+                      name="mobile"
+                      type="tel"
+                      inputMode="numeric"
+                      value={v.mobile}
+                      onChange={(e) =>
+                        set('mobile', e.target.value.replace(/\D/g, '').slice(0, 10))
+                      }
+                      autoComplete="tel-national"
+                      placeholder="98765 43210"
+                      className={`${cls('mobile')} pl-[3.25rem]`}
+                      {...aria('mobile')}
+                    />
+                  </div>
+                </Field>
+                <DateField
+                  id="dob"
+                  value={v.dob}
+                  onChange={(iso) => set('dob', iso)}
+                  error={errors.dob}
+                  inputClass={cls('dob')}
+                />
+              </div>
             </Collapse>
 
-            <Collapse show={signup} index={2}>
-              <DateField
-                id="dob"
-                value={v.dob}
-                onChange={(iso) => set('dob', iso)}
-                error={errors.dob}
-                inputClass={cls('dob')}
-              />
-            </Collapse>
-
-            <Collapse show={!forgot} index={0}>
+            <Collapse show={!forgot} index={2}>
               <div data-anim="rise" className="flex min-w-0 flex-col gap-1.5">
                 <div className="flex items-baseline justify-between">
-                  <label htmlFor="password" className="text-[13px] font-medium text-ink-2">
-                    Password
-                  </label>
+                  <Label htmlFor="password">Password</Label>
                   <AnimatePresence initial={false}>
                     {login && (
                       <motion.a
@@ -326,7 +342,7 @@ export function AuthFlow({ initial }: { initial: Mode }) {
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.2 }}
-                        className="text-[13px] text-ink-3 underline underline-offset-2 hover:text-ink"
+                        className="link text-sm"
                       >
                         Forgot password?
                       </motion.a>
@@ -341,7 +357,6 @@ export function AuthFlow({ initial }: { initial: Mode }) {
                     value={v.password}
                     onChange={(e) => set('password', e.target.value)}
                     autoComplete={signup ? 'new-password' : 'current-password'}
-                    placeholder={signup ? 'At least 10 characters' : undefined}
                     className={`${cls('password')} pr-20`}
                     {...aria('password')}
                   />
@@ -349,12 +364,16 @@ export function AuthFlow({ initial }: { initial: Mode }) {
                     type="button"
                     onClick={() => setShowPassword((s) => !s)}
                     aria-pressed={showPassword}
-                    className="absolute right-1.5 top-1/2 h-9 -translate-y-1/2 rounded-full px-3 text-sm font-medium text-ink-3 transition-colors hover:text-ink"
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    className="absolute right-1.5 top-1/2 h-9 -translate-y-1/2 rounded-full px-3 text-sm font-medium text-ink-2 transition-colors duration-200 hover:bg-surface-2 hover:text-ink"
                   >
                     {showPassword ? 'Hide' : 'Show'}
                   </button>
                 </div>
                 <Message id="password" error={errors.password} />
+                {signup && !errors.password && (
+                  <p className="text-sm text-ink-3">At least 10 characters.</p>
+                )}
               </div>
             </Collapse>
 
@@ -375,7 +394,7 @@ export function AuthFlow({ initial }: { initial: Mode }) {
 
             <Collapse show={signup} index={4}>
               <div data-anim="rise" className="flex flex-col gap-1.5">
-                <label className="flex cursor-pointer items-start gap-3 text-[13px] leading-snug text-ink-2">
+                <label className="flex cursor-pointer items-start gap-3 text-[15px] leading-snug text-ink-2">
                   <input
                     id="terms"
                     name="terms"
@@ -387,13 +406,15 @@ export function AuthFlow({ initial }: { initial: Mode }) {
                   />
                   <span
                     aria-hidden="true"
-                    className="mt-px grid h-5 w-5 shrink-0 place-items-center rounded-md border border-line bg-surface text-bg transition-colors peer-checked:border-ink peer-checked:bg-ink peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-ink [&>svg]:opacity-0 peer-checked:[&>svg]:opacity-100"
+                    className={`grid h-[22px] w-[22px] shrink-0 place-items-center rounded-md border bg-surface text-accent-ink transition-colors duration-200 peer-checked:border-accent peer-checked:bg-accent peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-accent [&>svg]:opacity-0 peer-checked:[&>svg]:opacity-100 ${
+                      errors.terms ? 'border-danger' : 'border-line-strong'
+                    }`}
                   >
-                    <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                    <svg width="13" height="13" viewBox="0 0 12 12" fill="none" aria-hidden="true">
                       <path
                         d="M2.4 6.3 4.9 8.8 9.7 3.4"
                         stroke="currentColor"
-                        strokeWidth="1.7"
+                        strokeWidth="1.8"
                         strokeLinecap="round"
                         strokeLinejoin="round"
                       />
@@ -401,11 +422,11 @@ export function AuthFlow({ initial }: { initial: Mode }) {
                   </span>
                   <span>
                     I'm 18 or older, and I agree to the{' '}
-                    <a href="/terms" className="text-ink underline underline-offset-2">
+                    <a href="/terms" className="link">
                       Terms
                     </a>{' '}
                     and{' '}
-                    <a href="/privacy" className="text-ink underline underline-offset-2">
+                    <a href="/privacy" className="link">
                       Privacy Policy
                     </a>
                     .
@@ -415,31 +436,45 @@ export function AuthFlow({ initial }: { initial: Mode }) {
               </div>
             </Collapse>
 
-            <div data-anim="rise">
+            <div data-anim="rise" className="pt-1">
               <motion.button
                 type="submit"
-                disabled={!ready}
-                whileTap={ready ? { scale: 0.98 } : undefined}
+                disabled={pending}
+                whileTap={pending ? undefined : { scale: 0.97 }}
                 transition={press}
-                className="h-[var(--ctl)] w-full overflow-hidden rounded-full bg-ink text-base font-medium text-bg transition-[background-color,color,opacity] duration-200 hover:opacity-90 disabled:cursor-not-allowed disabled:bg-line disabled:text-ink-3 disabled:opacity-100"
+                className={login ? secondary : primary}
               >
+                {pending && <Spinner />}
                 <AnimatePresence mode="wait" initial={false}>
                   <motion.span
-                    key={mode}
+                    key={`${mode}-${pending}`}
                     initial={{ opacity: 0, y: 6 }}
                     animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -6 }}
+                    exit={{ opacity: 0, y: -4 }}
                     transition={{ duration: 0.14, ease }}
                     className="block"
                   >
-                    {copy[mode].button}
+                    {pending ? copy[mode].pending : copy[mode].button}
                   </motion.span>
                 </AnimatePresence>
               </motion.button>
             </div>
           </form>
 
-          <p data-anim="rise" className="pt-[calc(var(--stack)+4px)] text-center text-sm text-ink-3">
+          <Collapse show={signup} index={5}>
+            <p
+              data-anim="rise"
+              className="mt-[var(--stack)] flex items-start gap-3 rounded-xl bg-accent-soft px-4 py-3 text-sm leading-relaxed text-ink-2"
+            >
+              <ShieldIcon size={18} className="mt-0.5 shrink-0 text-accent" />
+              <span>
+                Only you link your broker and approve trades on your account. Family can ask; you
+                decide.
+              </span>
+            </p>
+          </Collapse>
+
+          <p data-anim="rise" className="pt-[var(--stack)] text-base text-ink-3">
             <AnimatePresence mode="wait" initial={false}>
               <motion.span
                 key={mode}
@@ -458,21 +493,21 @@ export function AuthFlow({ initial }: { initial: Mode }) {
                         e.preventDefault();
                         go('login');
                       }}
-                      className="text-ink underline underline-offset-2 transition-opacity hover:opacity-70"
+                      className="link font-medium"
                     >
                       Log in
                     </a>
                   </>
                 ) : (
                   <>
-                    New here?{' '}
+                    New to Bargad?{' '}
                     <a
                       href="/signup"
                       onClick={(e) => {
                         e.preventDefault();
                         go('signup');
                       }}
-                      className="text-ink underline underline-offset-2 transition-opacity hover:opacity-70"
+                      className="link font-medium"
                     >
                       Create an account
                     </a>

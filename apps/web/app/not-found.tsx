@@ -3,7 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { NotFoundArt } from './not-found-art';
 
-export const metadata: Metadata = { title: 'Page not found · Bargad' };
+export const metadata: Metadata = { title: 'Page not found | Bargad' };
 
 export default function NotFound() {
   return (

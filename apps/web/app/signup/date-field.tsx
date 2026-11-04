@@ -2,7 +2,8 @@
 
 import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { Message } from './field';
+import { CalendarIcon } from '../icons';
+import { Label, Message } from './field';
 
 const MONTHS = [
   'January',
@@ -45,20 +46,6 @@ function Chevron({ dir }: { dir: 'left' | 'right' }) {
         strokeWidth="1.6"
         strokeLinecap="round"
         strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function CalendarIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-      <rect x="3" y="4.5" width="14" height="12.5" rx="3.2" stroke="currentColor" strokeWidth="1.5" />
-      <path
-        d="M3 8.6h14M7 2.8v3.1M13 2.8v3.1"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
       />
     </svg>
   );
@@ -201,9 +188,7 @@ export function DateField({
 
   return (
     <div data-anim="rise" className="flex min-w-0 flex-col gap-1.5">
-      <label htmlFor={id} className="text-[13px] font-medium text-ink-2">
-        Date of birth
-      </label>
+      <Label htmlFor={id}>Date of birth</Label>
 
       <div ref={root} className="relative">
         <input
@@ -225,9 +210,9 @@ export function DateField({
           aria-label="Open calendar"
           aria-expanded={open}
           aria-haspopup="dialog"
-          className="absolute right-1.5 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full text-ink-3 transition-colors hover:text-ink"
+          className="absolute right-1.5 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full text-ink-3 transition-colors duration-200 hover:bg-surface-2 hover:text-ink"
         >
-          <CalendarIcon />
+          <CalendarIcon size={20} />
         </button>
 
         <AnimatePresence>
@@ -248,7 +233,13 @@ export function DateField({
                 <button
                   type="button"
                   className={nav}
-                  aria-label={view === 'days' ? 'Previous month' : view === 'months' ? 'Previous year' : 'Earlier years'}
+                  aria-label={
+                    view === 'days'
+                      ? 'Previous month'
+                      : view === 'months'
+                        ? 'Previous year'
+                        : 'Earlier years'
+                  }
                   onClick={() =>
                     view === 'days'
                       ? stepMonth(-1)
@@ -267,7 +258,14 @@ export function DateField({
                     </button>
                   )}
                   {view !== 'years' ? (
-                    <button type="button" className={headBtn} onClick={() => { setYearPage(Math.floor(cursor.y / 12) * 12); setView('years'); }}>
+                    <button
+                      type="button"
+                      className={headBtn}
+                      onClick={() => {
+                        setYearPage(Math.floor(cursor.y / 12) * 12);
+                        setView('years');
+                      }}
+                    >
                       {cursor.y}
                     </button>
                   ) : (
@@ -280,9 +278,15 @@ export function DateField({
                 <button
                   type="button"
                   className={nav}
-                  aria-label={view === 'days' ? 'Next month' : view === 'months' ? 'Next year' : 'Later years'}
+                  aria-label={
+                    view === 'days' ? 'Next month' : view === 'months' ? 'Next year' : 'Later years'
+                  }
                   disabled={
-                    view === 'days' ? atCurrentMonth : view === 'months' ? cursor.y >= ty : yearPage + 12 > ty
+                    view === 'days'
+                      ? atCurrentMonth
+                      : view === 'months'
+                        ? cursor.y >= ty
+                        : yearPage + 12 > ty
                   }
                   onClick={() =>
                     view === 'days'
@@ -315,7 +319,10 @@ export function DateField({
                         cursor.y > ty ||
                         (cursor.y === ty && (cursor.m > tm || (cursor.m === tm && d > td)));
                       const isSel =
-                        !!selected && selected.y === cursor.y && selected.m === cursor.m && selected.d === d;
+                        !!selected &&
+                        selected.y === cursor.y &&
+                        selected.m === cursor.m &&
+                        selected.d === d;
                       const isToday = cursor.y === ty && cursor.m === tm && d === td;
                       return (
                         <button
@@ -327,7 +334,7 @@ export function DateField({
                           onClick={() => pickDay(d)}
                           className={`${cell} ${
                             isSel
-                              ? 'bg-ink font-medium text-bg'
+                              ? 'bg-accent font-medium text-accent-ink'
                               : isToday
                                 ? 'border border-line hover:bg-surface-2'
                                 : 'hover:bg-surface-2'
@@ -356,7 +363,7 @@ export function DateField({
                           setView('days');
                         }}
                         className={`${cell} h-11 rounded-xl ${
-                          isSel ? 'bg-ink font-medium text-bg' : 'hover:bg-surface-2'
+                          isSel ? 'bg-accent font-medium text-accent-ink' : 'hover:bg-surface-2'
                         }`}
                       >
                         {name.slice(0, 3)}
@@ -380,7 +387,7 @@ export function DateField({
                           setView('months');
                         }}
                         className={`${cell} h-11 rounded-xl ${
-                          isSel ? 'bg-ink font-medium text-bg' : 'hover:bg-surface-2'
+                          isSel ? 'bg-accent font-medium text-accent-ink' : 'hover:bg-surface-2'
                         }`}
                       >
                         {y}

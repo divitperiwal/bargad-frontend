@@ -1,42 +1,22 @@
 import type { Metadata } from 'next';
-import {
-  Bricolage_Grotesque,
-  DM_Sans,
-  Geist_Mono,
-  Instrument_Sans,
-  Instrument_Serif,
-  Libre_Caslon_Text,
-  Manrope,
-} from 'next/font/google';
+import { Atkinson_Hyperlegible_Next, Geist_Mono, Literata } from 'next/font/google';
 import './globals.css';
 
-const instrumentSerif = Instrument_Serif({
-  variable: '--font-instrument',
+// Headings: a sturdy book serif with a real italic, at home next to the
+// engraving and still solid at small sizes.
+const literata = Literata({
+  variable: '--font-literata',
   subsets: ['latin'],
-  weight: '400',
   style: ['normal', 'italic'],
 });
 
-const manrope = Manrope({ variable: '--font-manrope', subsets: ['latin'] });
-
-const bricolage = Bricolage_Grotesque({
-  variable: '--font-bricolage',
+// Body and controls: built for legibility, so a parent can read it easily.
+const atkinson = Atkinson_Hyperlegible_Next({
+  variable: '--font-atkinson',
+  // Next has no metrics for this face to build a fallback from.
+  adjustFontFallback: false,
   subsets: ['latin'],
 });
-
-const instrumentSans = Instrument_Sans({
-  variable: '--font-instrument-sans',
-  subsets: ['latin'],
-});
-
-const caslon = Libre_Caslon_Text({
-  variable: '--font-caslon',
-  subsets: ['latin'],
-  weight: '400',
-  style: ['normal', 'italic'],
-});
-
-const dmSans = DM_Sans({ variable: '--font-dm-sans', subsets: ['latin'] });
 
 const geistMono = Geist_Mono({
   variable: '--font-geist-mono',
@@ -48,13 +28,12 @@ export const metadata: Metadata = {
   description: 'One family. Many roots.',
 };
 
-const fontVars = [instrumentSerif, manrope, bricolage, instrumentSans, caslon, dmSans, geistMono]
-  .map((f) => f.variable)
-  .join(' ');
-
 export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
-    <html lang="en" data-type="g" className={`${fontVars} h-full antialiased`}>
+    <html
+      lang="en"
+      className={`${literata.variable} ${atkinson.variable} ${geistMono.variable} h-full antialiased`}
+    >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );

@@ -1,41 +1,61 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #ffffff;
+  /* Warm white page, paper for the engraving panel, one banyan-green accent
+     for actions, selection and focus. Text is a green-tinted near-black so the
+     neutrals and the accent belong to one family. */
+  --bg: #fbfaf7;
   --surface: #ffffff;
-  --surface-2: #efedea;
-  --line: #e3e0dc;
-  --ink: #141414;
-  --ink-2: #3d3d3d;
-  --ink-3: #6f6c68;
-  --inverse-bg: #141414;
-  --inverse-ink: #f7f5f3;
+  --surface-2: #f2efe8;
+  --line: #e2ddd3;
+  --line-strong: #c9c3b6;
+  --ink: #1b1f1c;
+  --ink-2: #3c423e;
+  --ink-3: #636a65;
+  --accent: #1f4d3a;
+  --accent-hover: #173d2e;
+  --accent-ink: #f7f5ef;
+  --accent-soft: #e6ede8;
+  --danger: #a2361f;
+  --danger-soft: #fbefeb;
+  --inverse-bg: #1b1f1c;
+  --inverse-ink: #f7f5ef;
   /* The illustration card is light paper in both themes: the engraving is
      dark ink, so it needs a light ground. */
-  --panel: #ece6da;
+  --panel: #eee9df;
+  --panel-ink: #1b1f1c;
+  --panel-ink-2: #3c423e;
   /* Behind the signed-in pages: a stone one step off white, so white cards read. */
   --ground: #f4f3f1;
   color-scheme: light;
   /* Form sizing that follows the window height, so a form fits the screen
      on a short laptop and stays roomy on a tall monitor. */
-  --ctl: clamp(42px, 6.4dvh, 52px);
-  --stack: clamp(8px, 1.7dvh, 16px);
+  --ctl: clamp(44px, 6dvh, 52px);
+  --stack: clamp(10px, 1.8dvh, 18px);
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 /* Light is the default and ignores the system setting for now. Dark is kept
    ready: setting <html data-theme="dark"> switches to it. */
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --bg: #171716;
-  --ground: #0f0f0e;
-  --surface: #171716;
-  --surface-2: #1f1f1d;
-  --line: #2b2b29;
-  --ink: #f2f0ed;
-  --ink-2: #c9c6c1;
-  --ink-3: #9a9792;
-  --inverse-bg: #f2f0ed;
-  --inverse-ink: #141414;
+  --bg: #121513;
+  --ground: #0e100f;
+  --surface: #181c19;
+  --surface-2: #20251f;
+  --line: #2c322d;
+  --line-strong: #414842;
+  --ink: #eef0ea;
+  --ink-2: #c7ccc4;
+  --ink-3: #959c94;
+  --accent: #8fc2a3;
+  --accent-hover: #a6d1b6;
+  --accent-ink: #0e1a13;
+  --accent-soft: #1c2b22;
+  --danger: #f09a82;
+  --danger-soft: #2a1914;
+  --inverse-bg: #eef0ea;
+  --inverse-ink: #121513;
 }
 
 @theme inline {
@@ -44,38 +64,27 @@
   --color-surface: var(--surface);
   --color-surface-2: var(--surface-2);
   --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
   --color-panel: var(--panel);
+  --color-panel-ink: var(--panel-ink);
+  --color-panel-ink-2: var(--panel-ink-2);
   --color-ink: var(--ink);
   --color-ink-2: var(--ink-2);
   --color-ink-3: var(--ink-3);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-soft: var(--accent-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
   --color-inverse-bg: var(--inverse-bg);
   --color-inverse-ink: var(--inverse-ink);
-  --font-sans: var(--type-body);
-  --font-serif: var(--type-display);
+  /* Literata for the voice (headings, the wordmark), Atkinson Hyperlegible
+     Next for everything you read and type: it was drawn for low-vision
+     readers, and its 0/O and 1/l/I never get mixed up in an email or a PIN. */
+  --font-sans: var(--font-atkinson);
+  --font-serif: var(--font-literata);
   --font-mono: var(--font-geist-mono);
-}
-
-/* Type pairing G is in use (see <html data-type> in layout.tsx). To switch,
-   set data-type to "i" or "f". All three fonts stay loaded for that. */
-:root {
-  --type-display: var(--font-bricolage);
-  --type-body: var(--font-instrument-sans);
-}
-
-:root[data-type="i"] {
-  --type-display: var(--font-instrument);
-  --type-body: var(--font-manrope);
-}
-
-:root[data-type="f"] {
-  --type-display: var(--font-caslon);
-  --type-body: var(--font-dm-sans);
-}
-
-/* Bricolage has no italic, so the accent line is set lighter instead. */
-:root:not([data-type="i"]):not([data-type="f"]) em {
-  font-style: normal;
-  opacity: 0.55;
 }
 
 /* Artwork drawn as dark ink on transparent: flipped to light lines on dark. */
@@ -113,12 +122,53 @@ svg {
 body {
   background: var(--bg);
   color: var(--ink);
-  font-family: var(--type-body), system-ui, sans-serif;
+  font-family: var(--font-atkinson), system-ui, sans-serif;
 }
 
-:focus-visible {
-  outline: 2px solid var(--ink);
-  outline-offset: 2px;
+/* In the base layer so a control can swap the ring for its own focus style. */
+@layer base {
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+}
+
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+/* Inline links. Underlined at rest so they read as links without colour;
+   hover darkens the text and thickens the underline. */
+.link {
+  color: var(--accent);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  transition:
+    color 200ms var(--ease),
+    text-decoration-thickness 200ms var(--ease);
+}
+
+.link-quiet {
+  border-radius: 4px;
+  transition: color 200ms var(--ease);
+}
+
+@media (hover: hover) {
+  .link:hover {
+    color: var(--accent-hover);
+    text-decoration-thickness: 2px;
+  }
+
+  .link-quiet:hover {
+    color: var(--ink);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

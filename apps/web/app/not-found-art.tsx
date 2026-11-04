@@ -60,7 +60,11 @@ export function NotFoundArt() {
             { strokeDashoffset: 0, duration: 0.9, ease: 'power2.out', stagger: 0.12 },
             1.5,
           )
-          .from('[data-nf=tip]', { opacity: 0, scale: 0, transformOrigin: '50% 50%', duration: 0.4 }, 1.7)
+          .from(
+            '[data-nf=tip]',
+            { opacity: 0, scale: 0, transformOrigin: '50% 50%', duration: 0.4 },
+            1.7,
+          )
           .from('[data-nf=rise]', { opacity: 0, y: 16, duration: 0.8, stagger: 0.08 }, 0.9)
           .add(() => {
             gsap.to('[data-nf=sway]', {
@@ -97,7 +101,7 @@ export function NotFoundArt() {
           textAnchor="middle"
           fill="currentColor"
           style={{
-            fontFamily: 'var(--type-display), serif',
+            fontFamily: 'var(--font-literata), serif',
             fontSize: 230,
             letterSpacing: '-0.04em',
           }}
@@ -162,7 +166,7 @@ export function NotFoundArt() {
         <button
           type="button"
           onClick={() => window.history.back()}
-          className="grid h-12 place-items-center rounded-full bg-ink px-7 text-base font-medium text-bg transition-opacity hover:opacity-90"
+          className="grid h-12 place-items-center rounded-full bg-accent px-7 text-base font-medium text-accent-ink transition-colors duration-200 hover:bg-accent-hover"
         >
           Go back
         </button>

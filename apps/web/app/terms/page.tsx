@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { DocPage, Section } from '../doc-page';
 
-export const metadata: Metadata = { title: 'Terms · Bargad' };
+export const metadata: Metadata = { title: 'Terms | Bargad' };
 
 export default function TermsPage() {
   return (
@@ -68,8 +68,8 @@ export default function TermsPage() {
         <p>
           If you leave, or the head removes you, every grant ends, unexecuted baskets are cancelled
           (including open broker orders placed from them), and the head loses all access to your
-          data, including history. Trades that already executed stay. You keep your own audit log and
-          history.
+          data, including history. Trades that already executed stay. You keep your own audit log
+          and history.
         </p>
       </Section>
 

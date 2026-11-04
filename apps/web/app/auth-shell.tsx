@@ -3,63 +3,89 @@ import { LoginStage } from './login/login-stage';
 import { Splash } from './splash';
 
 /**
- * The frame shared by the login and sign-up pages: the white illustration
- * panel fixed to the left edge, the form side on the page background.
+ * The frame shared by login, sign-up and password reset: the banyan engraving
+ * on a paper panel inset from the window edge, the form on the page. On phones
+ * the panel becomes a short banner above the form, cropped to the family
+ * sitting under the tree.
  */
 export function AuthShell({ children }: { children: React.ReactNode }) {
   return (
-    <LoginStage className="grid min-h-dvh bg-bg lg:h-dvh lg:grid-cols-[1.05fr_1fr] lg:overflow-hidden">
+    <LoginStage className="grid min-h-dvh bg-bg lg:h-dvh lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] lg:overflow-hidden">
       <Splash />
-      <section
-        className="relative hidden overflow-hidden bg-white text-[#141414] lg:sticky lg:top-0 lg:block lg:h-dvh lg:self-start"
-        style={{ borderTopRightRadius: 28, borderBottomRightRadius: 28 }}
-      >
-        <div
-          data-anim="art"
-          className="absolute bottom-0 left-0 aspect-square"
-          style={{
-            height: 'calc((100% - 235px) / 0.78)',
-            maskImage: 'linear-gradient(to right, #000 86%, transparent)',
-            WebkitMaskImage: 'linear-gradient(to right, #000 86%, transparent)',
-          }}
-        >
-          <Image
-            src="/brand/banyan-square-ink.png"
-            alt="A family sitting in the shade of a large banyan tree"
-            fill
-            priority
-            sizes="50vw"
-            className="object-cover"
-          />
-        </div>
-        <div className="relative flex flex-col gap-8 p-10">
-          <div data-anim="logo" className="flex items-center gap-3">
-            <Image
-              src="/brand/mark-b-roots-ink.png"
-              alt=""
-              width={215}
-              height={285}
-              className="h-11 w-auto"
-            />
-            <span className="font-serif text-[28px] leading-none tracking-tight">bargad</span>
-          </div>
-          <p className="font-serif text-[56px] leading-[1.02] tracking-[-0.02em]">
-            <span className="-mb-[0.12em] block overflow-hidden pb-[0.12em]">
-              <span data-anim="line" className="block">
-                One family.
-              </span>
-            </span>
-            <span className="-mb-[0.12em] block overflow-hidden pb-[0.12em]">
-              <em data-anim="line" className="block">
-                Many roots.
-              </em>
-            </span>
-          </p>
-        </div>
-      </section>
 
-      <section className="flex flex-col items-center px-6 py-[clamp(16px,4dvh,48px)] [scrollbar-width:none] lg:overflow-y-auto [&::-webkit-scrollbar]:hidden">
-        <div className="my-auto flex w-full flex-col items-center">{children}</div>
+      <div className="p-3 pb-0 lg:h-dvh lg:pb-3">
+        <section className="relative h-[clamp(184px,30dvh,260px)] overflow-hidden rounded-[20px] bg-panel text-panel-ink lg:h-full lg:rounded-[24px]">
+          <div
+            data-anim="art"
+            className="absolute bottom-0 left-1/2 aspect-square h-[260%] -translate-x-[46%] lg:h-[calc(100%-200px)] lg:min-h-[420px] lg:-translate-x-1/2"
+          >
+            <Image
+              src="/brand/banyan-square-ink.png"
+              alt="A family sitting in the shade of a large banyan tree"
+              fill
+              priority
+              sizes="(min-width: 1024px) 55vw, 100vw"
+              className="object-contain object-bottom"
+            />
+          </div>
+
+          <div className="relative flex flex-col gap-6 p-5 lg:p-10">
+            <div data-anim="logo" className="w-fit">
+              <a
+                href="/login"
+                className="flex items-center gap-2.5 rounded-full bg-panel py-1.5 pr-3.5 pl-2.5 transition-opacity duration-200 hover:opacity-70 lg:rounded-lg lg:bg-transparent lg:p-0"
+              >
+                <Image
+                  src="/brand/mark-b-roots-ink.png"
+                  alt=""
+                  width={215}
+                  height={285}
+                  className="h-7 w-auto lg:h-10"
+                />
+                <span className="font-serif text-[22px] font-medium leading-none tracking-[-0.01em] lg:text-[26px]">
+                  bargad
+                </span>
+              </a>
+            </div>
+
+            <div className="hidden max-w-[34ch] lg:block">
+              <p className="font-serif text-[clamp(40px,5.2dvh,52px)] font-medium leading-[1.1] tracking-[-0.025em]">
+                <span className="-mb-[0.12em] block overflow-hidden pb-[0.12em]">
+                  <span data-anim="line" className="block">
+                    One family.
+                  </span>
+                </span>
+                <span className="-mb-[0.12em] block overflow-hidden pb-[0.12em]">
+                  <em data-anim="line" className="block font-normal">
+                    Many roots.
+                  </em>
+                </span>
+              </p>
+              <p
+                data-anim="rise"
+                className="mt-4 max-w-[38ch] text-base leading-relaxed text-panel-ink-2"
+              >
+                Run your family's investments across every broker, while each member stays in
+                control of their own account.
+              </p>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <section className="flex flex-col px-6 pt-8 pb-6 [scrollbar-width:none] sm:px-10 lg:overflow-y-auto lg:px-12 lg:py-10 [&::-webkit-scrollbar]:hidden">
+        <div className="my-auto flex w-full justify-center">{children}</div>
+        <nav
+          aria-label="Legal"
+          className="mx-auto mt-10 flex w-full max-w-[420px] gap-5 text-sm text-ink-3"
+        >
+          <a href="/terms" className="link-quiet">
+            Terms
+          </a>
+          <a href="/privacy" className="link-quiet">
+            Privacy
+          </a>
+        </nav>
       </section>
     </LoginStage>
   );

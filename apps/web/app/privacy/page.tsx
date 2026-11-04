@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { DocPage, Section } from '../doc-page';
 
-export const metadata: Metadata = { title: 'Privacy · Bargad' };
+export const metadata: Metadata = { title: 'Privacy | Bargad' };
 
 export default function PrivacyPage() {
   return (
