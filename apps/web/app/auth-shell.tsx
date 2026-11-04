@@ -52,7 +52,8 @@ export function AuthShell({ children }: { children: React.ReactNode }) {
               data-anim="rise"
               className="mt-5 hidden max-w-[40ch] text-[17px] leading-relaxed text-brand-line/85 lg:block"
             >
-              One household across every broker. Each member stays in control of their own account.
+              See everyone's investments in one place, whichever broker they use. And each person
+              stays in charge of their own account.
             </p>
           </div>
 

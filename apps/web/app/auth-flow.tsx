@@ -2,7 +2,7 @@
 
 import { AnimatePresence, MotionConfig, motion, useReducedMotion } from 'motion/react';
 import { useEffect, useState } from 'react';
-import { FingerprintIcon, ShieldIcon } from './icons';
+import { FingerprintIcon } from './icons';
 import { DateField } from './signup/date-field';
 import { controlState, Field, Label, Message } from './signup/field';
 import { Toast } from './toast';
@@ -34,27 +34,29 @@ const empty: Values = {
 const copy = {
   login: {
     title: 'Welcome back',
-    subtitle: 'Log in to your household.',
+    subtitle: 'Log in to see how your family is doing.',
     doc: 'Log in | Bargad',
     button: 'Log in with password',
-    pending: 'Logging in',
-    toast: "Sign-in isn't connected yet. Try again once accounts are set up.",
+    pending: 'Logging you in',
+    toast:
+      "We can't log you in just yet. We're still setting up accounts, so please try again soon.",
   },
   signup: {
-    title: 'Create your household',
-    subtitle: 'Start with your own account. You can invite family next.',
+    title: "Let's set up your household",
+    subtitle: "Start with your own account. You can invite your family once you're in.",
     doc: 'Create account | Bargad',
-    button: 'Create account',
-    pending: 'Creating account',
-    toast: "Sign-up isn't connected yet. Try again once accounts are set up.",
+    button: 'Create my account',
+    pending: 'Setting things up',
+    toast:
+      "We can't create accounts just yet. We're still setting things up, so please try again soon.",
   },
   forgot: {
-    title: 'Reset your password',
-    subtitle: "Enter your email and we'll send you a link to choose a new one.",
+    title: 'Forgot your password?',
+    subtitle: "It happens. Tell us your email and we'll send you a link to set a new one.",
     doc: 'Reset password | Bargad',
-    button: 'Send reset link',
-    pending: 'Sending link',
-    toast: "Password reset isn't connected yet. Try again once accounts are set up.",
+    button: 'Send me a link',
+    pending: 'Sending your link',
+    toast: "Password resets aren't ready yet. Please try again soon.",
   },
 } as const;
 
@@ -68,10 +70,11 @@ const secondary = `${button} border border-line-strong bg-surface text-ink hover
 
 function validate(mode: Mode, v: Values): Errors {
   const e: Errors = {};
-  if (!/^\S+@\S+\.\S+$/.test(v.email.trim())) e.email = "That doesn't look like an email address.";
+  if (!/^\S+@\S+\.\S+$/.test(v.email.trim()))
+    e.email = "That email doesn't look quite right. Could there be a typo?";
   if (mode === 'forgot') return e;
   if (mode === 'login') {
-    if (!v.password) e.password = 'Enter your password.';
+    if (!v.password) e.password = 'Please enter your password.';
     return e;
   }
   return { ...e, ...validateProfile(v) };
@@ -212,7 +215,7 @@ export function AuthFlow({ initial }: { initial: Mode }) {
 
   return (
     <MotionConfig reducedMotion="user">
-      <div className="flex w-full max-w-[420px] flex-col gap-[clamp(20px,3.4dvh,32px)]">
+      <div className="flex w-full max-w-[400px] flex-col gap-[clamp(28px,4.6dvh,44px)]">
         <AnimatePresence mode="wait" initial={false}>
           <motion.header
             key={mode}
@@ -220,7 +223,7 @@ export function AuthFlow({ initial }: { initial: Mode }) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
             transition={{ duration: 0.2, ease }}
-            className="flex flex-col gap-2"
+            className="flex flex-col gap-3"
           >
             <h1
               data-anim="rise"
@@ -250,7 +253,7 @@ export function AuthFlow({ initial }: { initial: Mode }) {
           </Collapse>
 
           <Collapse show={login} index={1}>
-            <div data-anim="rise" className="flex items-center gap-4 text-sm text-ink-3">
+            <div data-anim="rise" className="flex items-center gap-4 py-1 text-sm text-ink-3">
               <span className="h-px flex-1 bg-line" />
               or
               <span className="h-px flex-1 bg-line" />
@@ -259,7 +262,7 @@ export function AuthFlow({ initial }: { initial: Mode }) {
 
           <form onSubmit={onSubmit} noValidate aria-busy={pending}>
             <Collapse show={signup} index={0}>
-              <Field id="name" label="Full name" error={errors.name}>
+              <Field id="name" label="Your full name" error={errors.name}>
                 <input
                   id="name"
                   name="name"
@@ -274,7 +277,7 @@ export function AuthFlow({ initial }: { initial: Mode }) {
             </Collapse>
 
             <Row>
-              <Field id="email" label="Email" error={errors.email}>
+              <Field id="email" label="Email address" error={errors.email}>
                 <input
                   id="email"
                   name="email"
@@ -323,7 +326,7 @@ export function AuthFlow({ initial }: { initial: Mode }) {
             </Collapse>
 
             <Collapse show={!forgot} index={2}>
-              <div data-anim="rise" className="flex min-w-0 flex-col gap-1.5">
+              <div data-anim="rise" className="flex min-w-0 flex-col gap-2">
                 <div className="flex items-baseline justify-between">
                   <Label htmlFor="password">Password</Label>
                   <AnimatePresence initial={false}>
@@ -369,13 +372,15 @@ export function AuthFlow({ initial }: { initial: Mode }) {
                 </div>
                 <Message id="password" error={errors.password} />
                 {signup && !errors.password && (
-                  <p className="text-sm text-ink-3">At least 10 characters.</p>
+                  <p className="text-sm text-ink-3">
+                    Use 10 or more characters. A short phrase is easy to remember.
+                  </p>
                 )}
               </div>
             </Collapse>
 
             <Collapse show={signup} index={3}>
-              <Field id="confirm" label="Confirm password" error={errors.confirm}>
+              <Field id="confirm" label="Type your password again" error={errors.confirm}>
                 <input
                   id="confirm"
                   name="confirm"
@@ -457,18 +462,6 @@ export function AuthFlow({ initial }: { initial: Mode }) {
               </motion.button>
             </div>
           </form>
-
-          <Collapse show={signup} index={5}>
-            <p
-              data-anim="rise"
-              className="mt-[var(--stack)] flex items-start gap-2.5 text-sm leading-relaxed text-ink-2"
-            >
-              <ShieldIcon size={18} className="mt-0.5 shrink-0 text-ink" />
-              <span>
-                Every trade on your account needs your approval. Family can ask; you decide.
-              </span>
-            </p>
-          </Collapse>
 
           <p data-anim="rise" className="pt-[var(--stack)] text-base text-ink-3">
             <AnimatePresence mode="wait" initial={false}>

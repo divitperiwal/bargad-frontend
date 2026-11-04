@@ -20,13 +20,13 @@ export function ageOn(dob: string, today = new Date()) {
 /** The rules every new account follows, whether it signs up or accepts an invite. */
 export function validateProfile(v: Profile): ProfileErrors {
   const e: ProfileErrors = {};
-  if (v.name.trim().length < 2) e.name = 'Enter your full name.';
-  if (!/^[6-9]\d{9}$/.test(v.mobile)) e.mobile = 'Enter a 10-digit mobile number.';
+  if (v.name.trim().length < 2) e.name = 'Please tell us your full name.';
+  if (!/^[6-9]\d{9}$/.test(v.mobile)) e.mobile = 'Please enter your 10-digit mobile number.';
   const age = ageOn(v.dob);
-  if (age === null) e.dob = 'Enter your date of birth.';
-  else if (age < 18) e.dob = 'Bargad accounts are for people 18 and over.';
-  if (v.password.length < 10) e.password = 'Use at least 10 characters.';
-  if (v.confirm !== v.password) e.confirm = "The passwords don't match.";
-  if (!v.terms) e.terms = 'Accept the terms to continue.';
+  if (age === null) e.dob = 'Please add your date of birth.';
+  else if (age < 18) e.dob = 'You need to be 18 or older to have a Bargad account.';
+  if (v.password.length < 10) e.password = 'Your password needs at least 10 characters.';
+  if (v.confirm !== v.password) e.confirm = "These two passwords don't match yet.";
+  if (!v.terms) e.terms = 'Please tick this box to carry on.';
   return e;
 }

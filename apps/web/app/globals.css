@@ -42,7 +42,7 @@
   /* Form sizing that follows the window height, so a form fits a short
      laptop screen and stays roomy on a tall monitor. */
   --ctl: clamp(44px, 6dvh, 50px);
-  --stack: clamp(10px, 1.8dvh, 18px);
+  --stack: clamp(14px, 2.3dvh, 22px);
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 

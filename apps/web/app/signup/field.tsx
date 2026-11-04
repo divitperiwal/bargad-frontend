@@ -65,7 +65,7 @@ export function Field({
   children: React.ReactNode;
 }) {
   return (
-    <div data-anim="rise" className="flex min-w-0 flex-col gap-1.5">
+    <div data-anim="rise" className="flex min-w-0 flex-col gap-2">
       <Label htmlFor={id}>{label}</Label>
       {children}
       <Message id={id} error={error} />
