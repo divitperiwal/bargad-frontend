@@ -2,7 +2,6 @@
 
 import { AnimatePresence, MotionConfig, motion } from 'motion/react';
 import { useEffect, useRef, useState } from 'react';
-import { ShieldIcon } from './icons';
 import { DateField } from './signup/date-field';
 import { controlState, Field, Label, Message } from './signup/field';
 import { Toast } from './toast';
@@ -486,20 +485,6 @@ export function AuthFlow({ initial }: { initial: Mode }) {
               </a>
             </>
           )}
-        </p>
-
-        <p
-          data-anim="rise"
-          className="mt-10 flex items-start gap-3 border-t border-line pt-6 text-sm leading-relaxed text-ink-3"
-        >
-          <ShieldIcon size={18} className="mt-0.5 shrink-0 text-ink-2" />
-          <span>
-            Your data stays yours. You choose what your family sees, and nobody can read your broker
-            login.{' '}
-            <a href="/privacy" className="link whitespace-nowrap">
-              How we protect it
-            </a>
-          </span>
         </p>
 
         <Toast message={toast} onClose={() => setToast(null)} />

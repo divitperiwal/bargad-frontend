@@ -1,8 +1,14 @@
+'use client';
+
+import { motion, useReducedMotion } from 'motion/react';
+
 /**
  * A faint field of hanging aerial roots for the canopy panel: thin strands
  * dropping from the top edge, swaying a little, some splitting in two, the
  * way a banyan's roots come down to become new trunks. Generated from a fixed
- * seed so it renders the same on the server and in the browser.
+ * seed so it renders the same on the server and in the browser. The strands
+ * draw themselves in once when the page loads; with reduced motion they are
+ * simply there.
  */
 
 const W = 640;
@@ -57,6 +63,7 @@ function build(): Strand[] {
 const strands = build();
 
 export function RootsPattern({ className }: { className?: string }) {
+  const reduce = useReducedMotion();
   return (
     <svg
       aria-hidden="true"
@@ -78,8 +85,16 @@ export function RootsPattern({ className }: { className?: string }) {
         </mask>
       </defs>
       <g mask="url(#roots-mask)">
-        {strands.map((s) => (
-          <path key={s.d} d={s.d} strokeWidth={s.w} strokeOpacity={s.o} />
+        {strands.map((s, n) => (
+          <motion.path
+            key={s.d}
+            d={s.d}
+            strokeWidth={s.w}
+            strokeOpacity={s.o}
+            initial={reduce ? false : { pathLength: 0 }}
+            animate={{ pathLength: 1 }}
+            transition={{ duration: 2.6, delay: 0.2 + (n % 9) * 0.12, ease: [0.22, 1, 0.36, 1] }}
+          />
         ))}
       </g>
     </svg>
