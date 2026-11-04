@@ -1,0 +1,3 @@
+[install]
+# Metro (Expo) expects a hoisted node_modules layout.
+linker = "hoisted"

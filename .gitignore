@@ -1,0 +1,21 @@
+node_modules/
+.turbo/
+dist/
+.next/
+.expo/
+*.log
+
+.env
+.env.*
+!.env.example
+
+# Go
+apps/engine/bin/
+apps/engine/engine
+*.exe
+
+# Keys: the engine's private key never enters the repo
+*.key
+secrets/
+
+.DS_Store
