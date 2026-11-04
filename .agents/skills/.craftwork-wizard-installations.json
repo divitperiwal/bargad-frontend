@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "skills": {
+    "craftwork-assets": {
+      "agents": [
+        "claude-code"
+      ],
+      "paths": {
+        "claude-code": "/home/user/bargad-frontend/.claude/skills/craftwork-assets"
+      },
+      "modes": {
+        "claude-code": "symlink"
+      },
+      "canonicalPath": "/home/user/bargad-frontend/.agents/skills/craftwork-assets"
+    }
+  }
+}
