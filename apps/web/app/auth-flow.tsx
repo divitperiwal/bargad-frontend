@@ -62,7 +62,7 @@ const ease = [0.22, 1, 0.36, 1] as const;
 const press = { duration: 0.15, ease } as const;
 
 const button =
-  'relative flex h-[var(--ctl)] w-full items-center justify-center gap-2.5 rounded-[10px] text-base font-medium transition-[background-color,color] duration-200 ease-[var(--ease)] disabled:cursor-progress';
+  'relative flex h-[var(--ctl)] w-full items-center justify-center gap-2.5 rounded-[8px] text-base font-medium transition-[background-color,color] duration-200 ease-[var(--ease)] disabled:cursor-progress';
 const primary = `${button} bg-brand text-brand-ink hover:bg-brand-hover`;
 const secondary = `${button} border border-line-strong bg-surface text-ink hover:bg-surface-2`;
 
@@ -461,15 +461,14 @@ export function AuthFlow({ initial }: { initial: Mode }) {
             </div>
           </form>
 
-          <Collapse show={signup} index={5}>
+          <Collapse show={!forgot} index={5}>
             <p
               data-anim="rise"
-              className="mt-[var(--stack)] flex items-start gap-3 rounded-[10px] bg-brand-soft px-4 py-3 text-sm leading-relaxed text-ink-2"
+              className="mt-[var(--stack)] flex items-start gap-2.5 text-sm leading-relaxed text-ink-2"
             >
-              <ShieldIcon size={18} className="mt-0.5 shrink-0 text-brand" />
+              <ShieldIcon size={18} className="mt-0.5 shrink-0 text-ink" />
               <span>
-                Only you link your broker and approve trades on your account. Family can ask; you
-                decide.
+                Every trade on your account needs your approval. Family can ask; you decide.
               </span>
             </p>
           </Collapse>

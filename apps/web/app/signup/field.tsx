@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from 'motion/react';
 
 /** A text input. The focus ring is drawn inside the border so it never shifts layout. */
 export const control =
-  'h-[var(--ctl)] w-full rounded-[10px] border bg-surface px-4 text-base text-ink placeholder:text-ink-3 outline-none transition-[border-color,box-shadow] duration-200 ease-[var(--ease)] focus-visible:outline-none';
+  'h-[var(--ctl)] w-full rounded-[8px] border bg-surface px-4 text-base text-ink placeholder:text-ink-3 outline-none transition-[border-color,box-shadow] duration-200 ease-[var(--ease)] focus-visible:outline-none';
 
 /** Classes for a control in its normal or error state. */
 export function controlState(error?: string) {

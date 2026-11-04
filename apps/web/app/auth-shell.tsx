@@ -5,75 +5,58 @@ import { Splash } from './splash';
 
 /**
  * The frame shared by login, sign-up and password reset. On wide screens a
- * jamun panel, inset from the window edge, carries the banyan engraving in
- * light linework, the tagline in its empty sky and a preview of the household
- * view. On phones the panel becomes a short banner cropped to the family under
- * the tree.
+ * Peacock-gradient frame, inset from the window edge, holds the headline and
+ * a preview of the household view; the form sits on white beside it. On
+ * phones the frame becomes a short banner with the logo and headline, and the
+ * form follows straight away.
  */
 export function AuthShell({ children }: { children: React.ReactNode }) {
   return (
-    <LoginStage className="grid min-h-dvh bg-bg lg:h-dvh lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:overflow-hidden">
+    <LoginStage className="grid min-h-dvh bg-bg lg:h-dvh lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)] lg:overflow-hidden">
       <Splash />
 
       <div className="p-3 pb-0 lg:h-dvh lg:p-4 lg:pr-0">
-        <section className="relative h-[clamp(196px,30dvh,260px)] overflow-hidden rounded-[20px] bg-brand text-brand-line lg:h-full">
-          <div data-anim="art" className="absolute inset-x-0 bottom-0 h-[230%] lg:h-[88%]">
-            <Image
-              src="/brand/banyan-family-line.webp"
-              alt="An engraving of a family sitting in the shade of a large banyan tree"
-              fill
-              priority
-              sizes="(min-width: 1024px) 50vw, 100vw"
-              className="object-contain object-bottom"
-            />
-          </div>
+        <section className="peacock flex h-full flex-col overflow-hidden rounded-[14px] p-6 text-brand-line lg:p-12">
+          <a
+            href="/login"
+            className="flex w-fit items-center gap-2.5 rounded-lg transition-opacity duration-200 hover:opacity-80"
+          >
+            <span data-anim="logo" className="flex items-center gap-2.5">
+              <Image
+                src="/brand/mark-b-roots-light.webp"
+                alt=""
+                width={215}
+                height={285}
+                className="h-6 w-auto lg:h-8"
+              />
+              <span className="font-serif text-[22px] leading-none tracking-[-0.01em] text-white lg:text-[26px]">
+                bargad
+              </span>
+            </span>
+          </a>
 
-          <div className="relative flex flex-col gap-8 p-5 lg:p-10">
-            <a
-              href="/login"
-              className="flex w-fit items-center gap-2.5 rounded-lg transition-opacity duration-200 hover:opacity-80"
-            >
-              <span data-anim="logo" className="flex items-center gap-2.5">
-                <Image
-                  src="/brand/mark-b-roots-light.webp"
-                  alt=""
-                  width={215}
-                  height={285}
-                  className="h-7 w-auto lg:h-9"
-                />
-                <span className="font-serif text-[24px] leading-none tracking-[-0.01em] text-brand-ink lg:text-[28px]">
-                  bargad
+          <div className="mt-8 lg:my-auto">
+            <p className="font-serif text-[26px] leading-[1.1] tracking-[-0.02em] text-white lg:text-[clamp(48px,6.4dvh,64px)]">
+              <span className="-mb-[0.14em] block overflow-hidden pb-[0.14em]">
+                <span data-anim="line" className="block">
+                  Grow your family's
                 </span>
               </span>
-            </a>
-
-            <div className="hidden lg:block">
-              <p className="font-serif text-[clamp(44px,6dvh,60px)] leading-[1.05] tracking-[-0.025em] text-brand-ink">
-                <span className="-mb-[0.14em] block overflow-hidden pb-[0.14em]">
-                  <span data-anim="line" className="block">
-                    One family.
-                  </span>
+              <span className="-mb-[0.14em] block overflow-hidden pb-[0.14em]">
+                <span data-anim="line" className="block">
+                  wealth, together.
                 </span>
-                <span className="-mb-[0.14em] block overflow-hidden pb-[0.14em]">
-                  <em data-anim="line" className="block text-brand-muted">
-                    Many roots.
-                  </em>
-                </span>
-              </p>
-              <p
-                data-anim="rise"
-                className="mt-5 max-w-[36ch] text-base leading-relaxed text-brand-line/85"
-              >
-                See your family's investments across every broker. Each member keeps control of
-                their own account.
-              </p>
-            </div>
+              </span>
+            </p>
+            <p
+              data-anim="rise"
+              className="mt-5 hidden max-w-[40ch] text-[17px] leading-relaxed text-brand-line/85 lg:block"
+            >
+              One household across every broker. Each member stays in control of their own account.
+            </p>
           </div>
 
-          <div
-            data-anim="rise"
-            className="absolute right-8 bottom-[18%] hidden xl:block 2xl:right-12"
-          >
+          <div data-anim="rise" className="hidden xl:block">
             <HouseholdPreview />
           </div>
         </section>
